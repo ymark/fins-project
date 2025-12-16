@@ -38,8 +38,7 @@ html, body {
     overflow-y: scroll !important;
 }
 
-/* === CUSTOM FONTS (CRITICAL FOR TYPOGRAPHY) === */
-/* NOTE: Assuming 'Inter' and 'Jaldi' are loaded */
+
 .fins-title {
     font-family: 'Inter', sans-serif;
 }
@@ -48,7 +47,6 @@ html, body {
 }
 
 
-/* === KEYFRAME ANIMATIONS (RETAINED & REFINED) === */
 
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -80,9 +78,6 @@ html, body {
     to { background-position: 100% 100%; }
 }
 
-/* ======================================= */
-/* === HEADER STYLES (RESTORED ORIGINAL) === */
-/* ======================================= */
 
 .info-page-container .fins-header {
     width: 100%;
@@ -194,12 +189,6 @@ html, body {
     width: 32px;
     height: 32px;
 }
-/* ======================================= */
-/* === END RESTORED HEADER STYLES === */
-/* ======================================= */
-
-
-/* === NEW: FLOATING BACK BUTTON STYLES === */
 
 .floating-back-btn {
     position: fixed;
@@ -251,12 +240,11 @@ html, body {
 }
 
 
-/* === PAGE CONTAINER & BACKGROUND (IMAGE IMPLEMENTATION) === */
 
 .info-page-container {
     height: auto; 
     min-height: 100vh;
-    background-image: url('../assets/OCEAN7.jpeg'); 
+    background-image: url('../assets/infoo.jpg'); 
     background-size: cover; 
     background-attachment: fixed;
     background-position: 70% 30%; 
@@ -287,7 +275,6 @@ html, body {
     z-index: 0;
 }
 
-/* === MAIN LAYOUT (RETAINED GRID) === */
 
 .main-content-grid {
     width: 90%;
@@ -323,7 +310,6 @@ html, body {
 }
 
 
-/* === HERO SECTION (More pronounced floating effect) === */
 
 .hero-section {
     background: var(--card-bg);
@@ -390,7 +376,6 @@ html, body {
     box-shadow: 0 20px 50px rgba(0, 188, 212, 0.7);
 }
 
-/* Image overlay for a 'wet' or premium look */
 .image-container::before {
     content: '';
     position: absolute;
@@ -426,6 +411,45 @@ html, body {
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.05); 
 }
 
+
+
+/* 1. Ensure the table container is responsive and distinct */
+.common-names-table-container {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.common-names-table-container h4 {
+    /* Use the same styling as InfoCard titles */
+    color: var(--primary-blue);
+    font-weight: 800; 
+    font-size: 20px; 
+    margin: 0 0 15px 0; 
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border-separator); 
+}
+
+
+.language-flag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700 !important; /* Make language stand out */
+    color: var(--primary-blue) !important;
+}
+
+.common-name-value {
+    color: var(--text-medium);
+    font-style: italic; /* Use italics for the names themselves */
+}
+
+/* 4. Enhancement for Table Rows (Quick feedback on hover) */
+.MuiTableRow-root:hover .MuiTableCell-root {
+    background-color: rgba(0, 188, 212, 0.08) !important; /* Subtle cyan background on hover */
+    transition: background-color 0.2s ease;
+}
+
+/* --- END NEW STYLING FOR COMMON NAMES TABLE --- */
 /* Scientific Name Enhancement - REFINED */
 .fish-scientific-name {
     font-size: 20px;

@@ -1,44 +1,55 @@
 import React, { useState, useEffect } from "react";
 import "./FishSearch.css";
+import AdvancedSearchForm from "./AdvancedSearch";
+import FishResultCard from "./FishResultCard";
+import {
+  Box,
+  Container,
+  Typography,
+  CircularProgress,
+  Alert,
+  Fade,
+  Chip,
+  Grid,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import WavesIcon from "@mui/icons-material/Waves";
+
+// ============================================
+// CORS PROXY HELPER
+// ============================================
+const buildApiUrl = (endpoint: string): string => {
+  const baseUrl = "https://demos.isl.ics.forth.gr/semantyfish-api/resources";
+  const fullUrl = `${baseUrl}${endpoint}`;
+  // Using a CORS proxy
+  return `https://corsproxy.io/?${encodeURIComponent(fullUrl)}`;
+};
 
 // --- INTERFACES ---
 export interface FishData {
-  // Core Identity
   id: number;
   species_code: number;
   scientific_name: string;
   common_name: string;
   vernacular_name: string;
-
-  // Taxonomy
   scientific_author: string;
   genus: string;
   genus_code: number;
   family: string;
   family_code: number;
   subfamily: string;
-
-  // Classification Status
   taxonomic_issue: string;
   taxonomic_remarks: string;
   source: string;
-
-  // Environment
   saltwater: boolean;
   freshwater: boolean;
   brackish: boolean;
   preferred_environment: string;
-
-  // Physical Characteristics
   body_shape: string;
   dangerous_species: string;
-
-  // Biological Features
   electrogenic: string;
   air_breathing: string;
   migration_type: string;
-
-  // Size & Age Dimensions
   size_of_fish: string;
   min_depth: string;
   max_depth: string;
@@ -46,69 +57,55 @@ export interface FishData {
   common_deep: string;
   max_weight: string;
   max_age: string;
-
-  // Conservation & Vulnerability
   fishing_vulnerability: string;
   fishing_vulnerability_value: number;
   vulnerability_climate_index: string;
   vulnerability_climate_value: number;
   phylogenetic_diversity: number;
   emblematic_species: boolean;
-
-  // Commercial Data
   fisheries_importance: string;
   importance_remarks: string;
   used_as_bait: string;
   aquaculture_status: string;
   game_fish: boolean;
-
-  // Market & Trade
-  catching_methods: string; // main_method_using_fao_name
-  other_catching_methods: string[]; // other_methods
+  catching_methods: string;
+  other_catching_methods: string[];
   landings_statistics: string;
   landings_areas: string;
   price_category: string;
   price_reliability: string;
-
-  // Aquarium
   aquarium_demand: string;
   aquarium_details: string;
-
-  // Description
   description: string;
   comments: string;
-
-  // --- EXTENDED TAXONOMIC DATA ---
   genus_details: any;
   family_details: any;
   order_details: any;
   class_details: any;
-  common_names_list: any[];
+  common_names_list: { common_name: string; language: string }[];
+  photo_url?: string;
 }
 
-// Interface for the temporary list to display names
 interface SpeciesSummary {
   id: number;
   scientific_name: string;
   common_name: string;
 }
 
-// --- NEW INTERFACE FOR RANDOM FISH DATA (Includes full details for card display) ---
 interface RandomFishSummary {
   id: number;
   scientific_name: string;
   common_name: string;
   photo_url: string;
-
-  // Taxonomy for display
   class: string;
   order: string;
   family: string;
-
-  // Habitat for display
   max_depth: string;
   environment: string;
+  description: string;
 }
+
+const LIMIT_RESULTS = 10;
 
 export default function FishSearch({
   onFishFound,
@@ -118,16 +115,12 @@ export default function FishSearch({
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // --- NEW STATE FOR FEATURED FISH ---
   const [randomFishList, setRandomFishList] = useState<RandomFishSummary[]>([]);
   const [isRandomLoading, setIsRandomLoading] = useState(true);
-
   const [searchResultsList, setSearchResultsList] = useState<SpeciesSummary[]>(
     []
   );
 
-  // *** HELPER: Capitalizes the first letter (CRUCIAL for Name/Genus matching) ***
   const capitalizeFirstLetter = (string: string): string => {
     if (!string) return "";
     const parts = string.trim().split(" ");
@@ -142,30 +135,25 @@ export default function FishSearch({
     return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
   };
 
-  // Helper to extract dimensional data (UNCHANGED)
   const getDimensionValue = (dimensions: any[], type: string): string => {
     const dim = dimensions.find((d: any) => d.type === type);
     if (dim && dim.value) {
       const unit = dim.unit || "";
-      if (type === "max weight" && dim.value > 1000 && unit === "kilograms") {
-        return `${(dim.value / 1000).toFixed(1)} kg`;
+      if (type === "max weight" && unit === "kilograms") {
+        return `${dim.value.toLocaleString("en-US", {
+          maximumFractionDigits: 1,
+        })} kg`;
       }
       return `${dim.value} ${unit}`;
     }
     return "N/A";
   };
 
-  // Helper function to safely fetch and return JSON data (UNCHANGED)
   const fetchAndParse = async (url: string | null): Promise<any> => {
-    if (url === null) {
-      return {};
-    }
+    if (url === null) return {};
     try {
       const response = await fetch(url);
-      if (response.ok) {
-        return await response.json();
-      }
-      // Return empty object on non-200 status for helper functions
+      if (response.ok) return await response.json();
       return {};
     } catch (e) {
       console.error(`Error fetching data from ${url}:`, e);
@@ -173,45 +161,43 @@ export default function FishSearch({
     return {};
   };
 
-  // Fetches the comprehensive data once the speciesCode is known (UNCHANGED)
   const fetchSpeciesDetails = async (
     speciesCode: number,
     commonName: string = "N/A"
   ) => {
-    // 1. PRIMARY FETCH: Species details (Sequential to get genus/family codes)
-    const detailsResponse = await fetch(
-      `/api/resources/species/${speciesCode}`
-    );
+    const detailsResponse = await fetch(buildApiUrl(`/species/${speciesCode}`));
+
     if (!detailsResponse.ok) {
-      // Throw a specific error if the main detail fetch fails (e.g., ID is invalid)
       throw new Error(
         `Αποτυχία λήψης στοιχείων είδους για ID ${speciesCode}. Status: ${detailsResponse.status}`
       );
     }
+
     const data = await detailsResponse.json();
     const dims = data.dimensions || [];
 
-    // Extract codes needed for subsequent taxonomic calls
     const genusCode = data.genus?.genus_code;
     const familyCode = data.family?.family_code;
 
-    // 2. PARALLEL FETCHES: Genus, Family, and Common Names List
-    const [genusData, familyData, commonNamesData] = await Promise.all([
-      fetchAndParse(genusCode ? `/api/resources/genus/${genusCode}` : null),
-      fetchAndParse(familyCode ? `/api/resources/family/${familyCode}` : null),
-      fetchAndParse(`/api/resources/common_name/${speciesCode}`),
+    const [genusData, familyData, commonNamesDataRaw] = await Promise.all([
+      fetchAndParse(genusCode ? buildApiUrl(`/genus/${genusCode}`) : null),
+      fetchAndParse(familyCode ? buildApiUrl(`/family/${familyCode}`) : null),
+      fetchAndParse(
+        buildApiUrl(`/get_common_names_for?species_code=${speciesCode}`)
+      ),
     ]);
 
     const orderCode = familyData.order?.order_code;
     const classCode = familyData.class?.class_code;
 
-    // 3. PARALLEL FETCHES: Order and Class Data
     const [orderData, classData] = await Promise.all([
-      fetchAndParse(orderCode ? `/api/resources/order/${orderCode}` : null),
-      fetchAndParse(classCode ? `/api/resources/class/${classCode}` : null),
+      fetchAndParse(orderCode ? buildApiUrl(`/order/${orderCode}`) : null),
+      fetchAndParse(classCode ? buildApiUrl(`/class/${classCode}`) : null),
     ]);
 
-    // 4. Build comprehensive fish data object with ALL available fields
+    // --- Determine Photo URL ---
+    const photoUrl = `https://www.fishbase.de/images/species/${data.species_code}.gif`;
+
     const fishInfo: FishData = {
       id: data.id || speciesCode,
       species_code: speciesCode,
@@ -220,7 +206,6 @@ export default function FishSearch({
         data.vernacular_name || data.common_name || commonName || "N/A",
       vernacular_name:
         data.vernacular_name || data.common_name || commonName || "N/A",
-
       scientific_author: data.scientific_name_assignment
         ? `${data.scientific_name_assignment.assigned_by} (${data.scientific_name_assignment.at_year})`
         : "N/A",
@@ -229,22 +214,18 @@ export default function FishSearch({
       family: data.family?.family_name || "N/A",
       family_code: data.family?.family_code || 0,
       subfamily: data.subfamily || "N/A",
-
       taxonomic_issue: data.taxonomic_issue?.issue || "None",
       taxonomic_remarks: data.taxonomic_issue?.remarks || "N/A",
       source: data.source || "N/A",
-
       saltwater: data.salt_water_environment || false,
       freshwater: data.freshwater_environment || false,
       brackish: data.brackish_water_environment || false,
       preferred_environment: data.preferred_environment || "N/A",
-
       body_shape: data.body_shape || "N/A",
       dangerous_species: data.dangerous_species_indicator || "N/A",
       electrogenic: data.electrogenic || "N/A",
       air_breathing: data.air_breathing_status || "N/A",
       migration_type: data.migration_type || "N/A",
-
       size_of_fish: getDimensionValue(dims, "max length"),
       min_depth: getDimensionValue(dims, "most shallow waters"),
       max_depth: getDimensionValue(dims, "most deep waters"),
@@ -252,21 +233,17 @@ export default function FishSearch({
       common_deep: getDimensionValue(dims, "common deep waters"),
       max_weight: getDimensionValue(dims, "max weight"),
       max_age: getDimensionValue(dims, "longevity wild"),
-
       fishing_vulnerability: data.vulnerability_fishing?.index || "N/A",
       fishing_vulnerability_value: data.vulnerability_fishing?.value || 0,
       vulnerability_climate_index: data.vulnerability_climate?.index || "N/A",
       vulnerability_climate_value: data.vulnerability_climate?.value || 0,
       phylogenetic_diversity: data.phylogenetic_diversity_index || 0,
       emblematic_species: data.emblematic_species || false,
-
       fisheries_importance: data.importance?.importance || "N/A",
       importance_remarks: data.importance?.remarks || "N/A",
       used_as_bait: data.used_as_bait || "N/A",
       aquaculture_status: data.used_for_aquaculture || "N/A",
       game_fish: data.world_record_game_fishes || false,
-
-      // *** ΔΙΟΡΘΩΣΗ: Χρήση του σωστού κλειδιού 'catching_method' ***
       catching_methods:
         data.catching_method?.main_method_using_fao_name || "N/A",
       other_catching_methods: data.catching_method?.other_methods || [],
@@ -274,26 +251,106 @@ export default function FishSearch({
       landings_areas: data.landings?.areas || "N/A",
       price_category: data.price_category?.value || "N/A",
       price_reliability: data.price_category?.price_reliability || "N/A",
-
       aquarium_demand: data.aquarium_demand?.value || "N/A",
       aquarium_details: data.aquarium_demand?.details || "N/A",
-
       description: data.comments || "No description available.",
       comments: data.comments || "No description available.",
-
       genus_details: genusData,
       family_details: familyData,
       order_details: orderData,
       class_details: classData,
-      common_names_list: commonNamesData.results || [],
+      common_names_list: commonNamesDataRaw.common_names || [],
+      photo_url: photoUrl,
     };
 
     console.log("Complete Fish Data:", fishInfo);
     if (onFishFound) onFishFound(fishInfo);
   };
 
+  const advancedSearchDatabase = async (filters: Record<string, string>) => {
+    setRandomFishList([]);
+    setSearchResultsList([]);
+    setIsLoading(true);
+    setError(null);
+    setQuery("");
+
+    const filteredFilters = Object.entries(filters)
+      .filter(([, value]) => value !== "" && value !== "false")
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+
+    const queryString = Object.entries(filteredFilters)
+      .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+      .join("&");
+
+    const finalQuery = queryString || "scientific_name=";
+    const searchUrl = buildApiUrl(`/search_species?${finalQuery}`);
+
+    try {
+      console.log("Advanced search URL:", searchUrl);
+      const searchResponse = await fetch(searchUrl);
+
+      if (!searchResponse.ok) {
+        throw new Error(`Server returned status ${searchResponse.status}`);
+      }
+
+      const searchData = await searchResponse.json();
+      let resultsArray = searchData.results;
+
+      if (resultsArray && resultsArray.length > LIMIT_RESULTS) {
+        console.warn(`Limiting results to first ${LIMIT_RESULTS} for testing.`);
+        resultsArray = resultsArray.slice(0, LIMIT_RESULTS);
+      }
+
+      if (!resultsArray || resultsArray.length === 0) {
+        setError("Δεν βρέθηκαν αποτελέσματα για τα επιλεγμένα κριτήρια.");
+        return;
+      }
+
+      if (resultsArray.length === 1) {
+        await fetchSpeciesDetails(resultsArray[0], "N/A");
+      } else {
+        const nameFetchPromises = resultsArray.map((id: number) =>
+          fetch(buildApiUrl(`/species/${id}`))
+            .then((res) => res.json())
+            .then((data) => ({
+              id: id,
+              scientific_name: data.scientific_name || "N/A",
+              common_name: data.common_name || data.vernacular_name || "N/A",
+            }))
+            .catch((e) => {
+              console.error(`Error fetching name for ID ${id}:`, e);
+              return null;
+            })
+        );
+
+        const rawResults: (SpeciesSummary | null)[] = await Promise.all(
+          nameFetchPromises
+        );
+        const validResults: SpeciesSummary[] = rawResults.filter(
+          (r) => r !== null
+        ) as SpeciesSummary[];
+
+        if (validResults.length > 0) {
+          setSearchResultsList(validResults);
+        } else {
+          setError(
+            "Η αναζήτηση βρήκε IDs, αλλά απέτυχε να φορτώσει τις λεπτομέρειες των ειδών."
+          );
+        }
+      }
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Προέκυψε άγνωστο σφάλμα κατά τη σύνθετη αναζήτηση.";
+      console.error("Advanced search error:", err);
+      setError(`Η σύνθετη αναζήτηση απέτυχε. Λεπτομέρειες: ${errorMessage}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const searchDatabase = async (searchQuery: string) => {
-    // Clear random fish list display when a search starts
     setRandomFishList([]);
     setIsLoading(true);
     setError(null);
@@ -305,33 +362,58 @@ export default function FishSearch({
 
     try {
       let speciesCodeToFetch = 0;
-      let resultsArray: number[] = []; // Array to collect IDs
+      let resultsArray: number[] = [];
+      const capitalizedQuery = capitalizeFirstLetter(query);
 
-      // 1. --- ID SEARCH ---
-      if (isIdSearch) {
+      let searchData = null;
+
+      let searchUrl = buildApiUrl(
+        `/search_common_names?common_name=${encodeURIComponent(query)}`
+      );
+      let searchResponse = await fetch(searchUrl);
+      searchData = searchResponse.ok ? await searchResponse.json() : null;
+
+      if (searchData && searchData.ids && searchData.ids.length > 0) {
+        resultsArray = searchData.ids;
+      }
+
+      if (resultsArray.length === 0) {
+        searchUrl = buildApiUrl(
+          `/search_common_names?common_name=${encodeURIComponent(
+            capitalizedQuery
+          )}`
+        );
+        searchResponse = await fetch(searchUrl);
+        searchData = searchResponse.ok ? await searchResponse.json() : null;
+
+        if (searchData && searchData.ids && searchData.ids.length > 0) {
+          resultsArray = searchData.ids;
+        }
+      }
+
+      if (resultsArray.length === 0 && isIdSearch) {
         speciesCodeToFetch = numericId;
       }
-      // 2. --- NAME/GENUS SEARCH ---
-      else {
-        const capitalizedQuery = capitalizeFirstLetter(query);
-        let searchData = null;
 
-        // Attempt A: Search by Scientific Name
-        let searchUrl = `/api/resources/search_species?scientific_name=${encodeURIComponent(
-          capitalizedQuery
-        )}`;
-        let searchResponse = await fetch(searchUrl);
+      if (resultsArray.length === 0 && !isIdSearch) {
+        // --- Search by Scientific Name ---
+        searchUrl = buildApiUrl(
+          `/search_species?scientific_name=${encodeURIComponent(
+            capitalizedQuery
+          )}`
+        );
+        searchResponse = await fetch(searchUrl);
         searchData = searchResponse.ok ? await searchResponse.json() : null;
 
         if (searchData && searchData.results && searchData.results.length > 0) {
           resultsArray = searchData.results;
         }
 
-        // Attempt B: Search by Genus (if scientific name failed or returned nothing)
         if (resultsArray.length === 0) {
-          searchUrl = `/api/resources/search_species?genus=${encodeURIComponent(
-            capitalizedQuery
-          )}`;
+          // --- Search by Genus Name ---
+          searchUrl = buildApiUrl(
+            `/search_species?genus=${encodeURIComponent(capitalizedQuery)}`
+          );
           searchResponse = await fetch(searchUrl);
           searchData = searchResponse.ok ? await searchResponse.json() : null;
 
@@ -343,25 +425,18 @@ export default function FishSearch({
             resultsArray = searchData.results;
           }
         }
-
-        // Handle single result from name/genus search
-        if (resultsArray.length === 1) {
-          speciesCodeToFetch = resultsArray[0];
-        }
       }
-      // --- END SEARCH PHASE ---
 
-      // 3. --- MULTI-RESULT HANDLING (List of Names) ---
+      if (resultsArray.length === 1) {
+        speciesCodeToFetch = resultsArray[0];
+      }
+
       if (resultsArray.length > 1) {
-        // Step A: Fetch names for all IDs in parallel
         const nameFetchPromises = resultsArray.map((id: number) =>
-          fetch(`/api/resources/species/${id}`)
+          fetch(buildApiUrl(`/species/${id}`))
             .then((res) => {
               if (!res.ok) {
-                // IMPORTANT: If the details are not found (404), throw to be caught below
-                throw new Error(
-                  `Invalid ID returned by search: ${id}. Status: ${res.status}`
-                );
+                throw new Error(`Invalid ID: ${id}. Status: ${res.status}`);
               }
               return res.json();
             })
@@ -370,17 +445,12 @@ export default function FishSearch({
               scientific_name: data.scientific_name || "N/A",
               common_name: data.common_name || data.vernacular_name || "N/A",
             }))
-            // Catch errors for specific IDs, return null so they are filtered out.
             .catch((e) => {
-              console.error(
-                `Error processing ID ${id}. Skipping from list:`,
-                e.message
-              );
+              console.error(`Error processing ID ${id}:`, e.message);
               return null;
             })
         );
 
-        // Step B: Wait for all name fetches, filter out nulls (broken IDs), and set the list
         const rawResults: (SpeciesSummary | null)[] = await Promise.all(
           nameFetchPromises
         );
@@ -390,7 +460,7 @@ export default function FishSearch({
 
         if (validResults.length === 0) {
           setError(
-            `Η αναζήτηση βρέθηκε ακατάλληλα δεδομένα (IDs), δοκιμάστε πιο συγκεκριμένη αναζήτηση.`
+            `Η αναζήτηση βρήκε ακατάλληλα δεδομένα, δοκιμάστε πιο συγκεκριμένη αναζήτηση.`
           );
           setIsLoading(false);
           return;
@@ -398,7 +468,7 @@ export default function FishSearch({
 
         setSearchResultsList(validResults);
         setIsLoading(false);
-        return; // EXIT: Display list for user selection
+        return;
       }
 
       if (speciesCodeToFetch > 0) {
@@ -407,7 +477,6 @@ export default function FishSearch({
           isIdSearch ? "N/A" : query
         );
       } else {
-        // This handles cases where 0 results are found OR an invalid ID search
         setError(
           `Δεν βρέθηκε είδος με το ID ή την ονομασία/γένος: "${query}".`
         );
@@ -436,71 +505,68 @@ export default function FishSearch({
     }
   };
 
-  // --- NEW FUNCTION: Fetch featured fish data (with corrected IDs) ---
   const fetchRandomFishData = async () => {
     setIsRandomLoading(true);
 
-    // ✅ CORRECTED MAPPING: ID 1269 replaced with 137 to ensure 6 working API calls.
     const featuredFishMapping = [
-      { id: 1051, placeholder: "Clownfish" },
-      { id: 143, placeholder: "Tuna" },
-      { id: 4082, placeholder: "Shark" },
-      { id: 137, placeholder: "Reef Fish" }, // Replaced invalid 1269
+      { id: 1051, placeholder: "Clown Anemonefish" },
+      { id: 143, placeholder: "Yellowfin Tuna" },
+      { id: 4082, placeholder: "Oceanic Whitetip Shark" },
+      { id: 137, placeholder: "Reef Fish" },
       { id: 5849, placeholder: "Grouper" },
       { id: 137, placeholder: "Mackerel" },
+      { id: 1051, placeholder: "Angelfish" },
+      { id: 143, placeholder: "Tiger Shark" },
     ];
 
     const fetchPromises = featuredFishMapping.map(async (item) => {
       try {
-        // 1. Fetch main species data
-        const detailResponse = await fetch(`/api/resources/species/${item.id}`);
+        const detailResponse = await fetch(buildApiUrl(`/species/${item.id}`));
         if (!detailResponse.ok) throw new Error("Species fetch failed");
         const data = await detailResponse.json();
         const dims = data.dimensions || [];
 
-        // 2. Fetch family/class/order details
         const familyData = await fetchAndParse(
           data.family?.family_code
-            ? `/api/resources/family/${data.family.family_code}`
+            ? buildApiUrl(`/family/${data.family.family_code}`)
             : null
         );
         const classData = await fetchAndParse(
           familyData.class?.class_code
-            ? `/api/resources/class/${familyData.class.class_code}`
+            ? buildApiUrl(`/class/${familyData.class.class_code}`)
             : null
         );
         const orderData = await fetchAndParse(
           familyData.order?.order_code
-            ? `/api/resources/order/${familyData.order.order_code}`
+            ? buildApiUrl(`/order/${familyData.order.order_code}`)
             : null
         );
 
-        // 3. Image URL (Using descriptive placeholder as final fallback for reliability)
         const commonName =
           data.common_name || data.vernacular_name || item.placeholder;
-        const photoUrl = `https://placehold.co/150x120/1a568b/ffffff?text=${item.placeholder.replace(
-          / /g,
-          "+"
-        )}`;
+
+        const photoUrl = `https://www.fishbase.de/images/species/${data.species_code}.gif`;
+
+        const primaryDescription = data.comments || data.description;
+
+        const descriptionText =
+          primaryDescription ||
+          `No detailed description available for ${commonName}.`;
 
         return {
           id: item.id,
           scientific_name: data.scientific_name || "N/A",
           common_name: commonName,
           photo_url: photoUrl,
-
           class: classData.name || "N/A",
           order: orderData.name || "N/A",
           family: data.family?.family_name || "N/A",
-
           max_depth: getDimensionValue(dims, "most deep waters"),
           environment: data.preferred_environment || "N/A",
+          description: descriptionText,
         };
       } catch (e) {
-        console.error(
-          `Failed to fetch full featured fish details for ID ${item.id}:`,
-          e
-        );
+        console.error(`Failed to fetch featured fish for ID ${item.id}:`, e);
         return null;
       }
     });
@@ -512,74 +578,54 @@ export default function FishSearch({
     setIsRandomLoading(false);
   };
 
-  // --- EFFECT HOOK: Load random fish on mount ---
   useEffect(() => {
     fetchRandomFishData();
   }, []);
 
-  // --- MODIFIED INLINE COMPONENT: Clickable Card (Now uses real data fields) ---
   const FeaturedFishCard = ({ fish }: { fish: RandomFishSummary }) => (
     <div
-      className="featured-list-card"
-      onClick={() => fetchSpeciesDetails(fish.id, fish.common_name)}
+      onClick={() => {
+        setIsLoading(true);
+        fetchSpeciesDetails(fish.id, fish.common_name);
+      }}
+      style={{ cursor: "pointer" }}
     >
-      <div className="card-photo-wrapper">
-        <img
-          src={fish.photo_url}
-          alt={fish.scientific_name}
-          className="featured-list-img"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            // Fallback to a simple ID placeholder if the descriptive placeholder fails
-            target.src = `https://placehold.co/150x120/1f2937/ffffff?text=ID+${fish.id}`;
-            target.onerror = null;
-          }}
-        />
-      </div>
-
-      <div className="card-info-main">
-        <h3 className="card-common-name">{fish.common_name}</h3>
-        <p className="card-scientific-name">{fish.scientific_name}</p>
-
-        <div className="card-details-grid">
-          <div className="card-taxonomy">
-            <h4>Taxonomy:</h4>
-            <p>
-              Class: <span>{fish.class}</span>
-            </p>
-            <p>
-              Order: <span>{fish.order}</span>
-            </p>
-            <p>
-              Family: <span>{fish.family}</span>
-            </p>
-          </div>
-
-          <div className="card-habitat">
-            <h4>Habitat Info:</h4>
-            <p>
-              Max Depth: <span>{fish.max_depth}</span>
-            </p>
-            <p>
-              Env: <span>{fish.environment}</span>
-            </p>
-          </div>
-        </div>
-      </div>
+      <FishResultCard
+        commonName={fish.common_name}
+        scientificName={fish.scientific_name}
+        typeLabel={fish.common_name.split(" ")[0] || fish.family}
+        taxonomy={{
+          class: fish.class,
+          order: fish.order,
+          family: fish.family,
+        }}
+        habitatInfo={{
+          maxDepth: fish.max_depth,
+          environment: fish.environment,
+        }}
+        imageUrl={fish.photo_url}
+        statusLabel={
+          fish.class.includes("Osteichthyes") ? "Stable" : "Vulnerable"
+        }
+        rarityLabel={fish.family.includes("idae") ? "Common" : "Rare"}
+        population={fish.order || "N/A"}
+        region={fish.environment || "N/A"}
+        description={fish.description}
+        onClick={() => {
+          setIsLoading(true);
+          fetchSpeciesDetails(fish.id, fish.common_name);
+        }}
+      />
     </div>
   );
 
   return (
     <div className="ocean-bg">
-      {/* ================================
-        === CSS-STYLED HEADER WITH SEARCH BAR === 
-        ================================
-      */}
-      <header className="fins-header">
+      <header className="fins-header header-no-search">
         <div className="fins-logo-group">
           <div className="fins-title-container">
             <h1 className="fins-title">FINS</h1>
-            <p className="fins-subtitle">Fish index Search Engine</p>
+            <p className="fins-subtitle">Fish Index Search Engine</p>
           </div>
 
           <img
@@ -587,25 +633,6 @@ export default function FishSearch({
             alt="FINS Logo"
             className="fins-logo-img"
           />
-        </div>
-
-        <div className="header-search-container header-search-container-large">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Search ID, Scientific Name or Genus"
-            className="search-input header-search-input header-search-input-large"
-            disabled={isLoading}
-          />
-          <button
-            onClick={handleSearch}
-            className="search-button header-search-button header-search-button-large"
-            disabled={isLoading}
-          >
-            {isLoading ? "..." : "🔎"}
-          </button>
         </div>
 
         <a href="/" className="fins-home-btn-wrapper">
@@ -621,100 +648,374 @@ export default function FishSearch({
           </svg>
         </a>
       </header>
+      <Box className="hero-search-wrapper">
+        <Typography
+          variant="h3"
+          component="h2"
+          sx={{
+            fontWeight: 900,
+            fontSize: { xs: "1.5rem", sm: "2.5rem" },
+            color: "#ffffff",
+            letterSpacing: "-1px",
+            mb: 0,
+          }}
+        >
+          Explore the
+        </Typography>
+        <Typography
+          variant="h3"
+          component="h2"
+          sx={{
+            fontWeight: 900,
+            fontSize: { xs: "2.5rem", sm: "2.5rem" },
+            background:
+              "linear-gradient(90deg, #194956 0%, #194956 11.1%, #2AB4C3 44.4%, #3BC1F2 70%,#55ADF8 50%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            letterSpacing: "-1px",
+            mb: 2,
+          }}
+        >
+          Ocean's Wonders
+        </Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            color: "#c8d2e8",
+            maxWidth: 800,
+            mx: "auto",
+            mb: 4,
+            fontSize: { xs: "2rem", sm: "1rem" },
+            fontWeight: 400,
+          }}
+        >
+          Discover comprehensive data on marine life, population dynamics, and
+          conservation status of aquatic species worldwide.
+        </Typography>
 
-      <div
-        className="main-content-area"
-        style={{
-          width: "100%",
-          maxWidth: "1100px",
-          margin: "50px auto",
-          padding: "0 20px",
-          color: "var(--light-text-color)",
+        <Box className="centered-search-container">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Search ID, Scientific Name, Genus, or Common Name"
+            className="search-input centered-search-input"
+            disabled={isLoading}
+          />
+          <button
+            onClick={handleSearch}
+            className="search-button centered-search-button"
+            disabled={isLoading}
+          >
+            <SearchIcon sx={{ fontSize: 32, color: "white" }} />
+          </button>
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          py: 4,
+          px: { xs: 2, sm: 4, md: 8 },
         }}
       >
-        {searchResultsList.length === 0 && !error && !isLoading && (
-          <div className="featured-section-wrapper">
-            <h2 className="featured-title">✨ Featured Species List</h2>
-            {isRandomLoading ? (
-              <p style={{ textAlign: "center", color: "#60a5fa" }}>
-                Loading featured fish...
-              </p>
-            ) : (
-              <div className="featured-list-container">
-                {randomFishList.map(
-                  (
-                    fish,
-                    index // <-- ADDED INDEX HERE
-                  ) => (
-                    <FeaturedFishCard
-                      key={`${fish.id}-${index}`} // <-- FIXED DUPLICATE KEY
-                      fish={fish}
-                    />
-                  )
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 2. Display List of Multiple Search Results - NEW STYLES APPLIED */}
-        {searchResultsList.length > 0 && (
-          <div className="search-results-wrapper">
-            <h3 className="search-results-title">
-              Πολλαπλά Αποτελέσματα Βρέθηκαν:
-            </h3>
-            <p className="search-results-instruction">
-              Παρακαλώ επιλέξτε το είδος που θέτελετε να δείτε αναλυτικά:
-            </p>
-            <ul className="search-results-list">
-              {searchResultsList.map((result) => (
-                <li
-                  key={result.id}
-                  onClick={() => {
-                    // Trigger the full search using the selected ID
-                    setQuery(result.id.toString());
-                    searchDatabase(result.id.toString());
+        {searchResultsList.length === 0 && !error && (
+          <Fade in timeout={800}>
+            <Box>
+              <Box sx={{ maxWidth: "1500px", mx: "auto", mb: 4 }}>
+                <AdvancedSearchForm
+                  onSearch={advancedSearchDatabase}
+                  onSearchStart={() => {
+                    setIsLoading(true);
+                    setSearchResultsList([]);
                   }}
-                  className="search-result-item"
-                >
-                  <strong className="search-result-scientific">
-                    {result.scientific_name || "N/A"}
-                  </strong>{" "}
-                  (
-                  <span className="search-result-common">
-                    {result.common_name || "N/A"}
-                  </span>
-                  )
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+                  onError={setError}
+                />
+              </Box>
 
-        {/* 3. Status/Error Display - RETAINED AND STYLED */}
-        <div style={{ minHeight: "150px", marginTop: "24px" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  my: 5,
+                  "&::before, &::after": {
+                    content: '""',
+                    flex: 1,
+                    borderBottom: "2px dashed",
+                    borderColor: "divider",
+                  },
+                }}
+              >
+                <WavesIcon sx={{ color: "#00bcd4", fontSize: 32 }} />
+              </Box>
+
+              <Box
+                sx={{
+                  mb: 4,
+                  pl: { xs: 0, sm: 15 },
+                  pr: { xs: 0, sm: 15 },
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    gap: 1,
+                    mb: 3,
+                    px: 0,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Box
+                      sx={{
+                        width: 5,
+                        height: 30,
+                        bgcolor: "#288590ff",
+                        borderRadius: 1,
+                        ml: 0,
+                      }}
+                    />
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        fontWeight: 900,
+                        color: "#ffffff",
+                        letterSpacing: "-0.5px",
+                      }}
+                    >
+                      Featured Species
+                    </Typography>
+                    <Chip
+                      label={`${randomFishList.length} Species`}
+                      size="small"
+                      sx={{
+                        bgcolor: "#2AB4C3",
+                        color: "white",
+                        fontWeight: 600,
+                      }}
+                    />
+                  </Box>
+
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: "#b7bbc4ff",
+                      fontSize: "1.1rem",
+                      ml: 1,
+                    }}
+                  >
+                    Dive into detailed profiles of remarkable aquatic creatures
+                  </Typography>
+                </Box>
+                {isRandomLoading ? (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      py: 8,
+                      gap: 2,
+                    }}
+                  >
+                    <CircularProgress size={48} sx={{ color: "#00bcd4" }} />
+                    <Typography color="text.secondary" sx={{ fontWeight: 500 }}>
+                      Loading featured fish...
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Grid
+                    container
+                    spacing={3}
+                    sx={{
+                      maxWidth: "100%",
+                      mx: 0,
+                      width: "100%",
+                    }}
+                  >
+                    {randomFishList.map((fish, index) => {
+                      const currentStatus = fish.class.includes("Osteichthyes")
+                        ? "Stable"
+                        : "Vulnerable";
+                      const currentRarity = fish.family.includes("idae")
+                        ? "Common"
+                        : "Rare";
+
+                      const currentOrder = fish.order || "N/A";
+                      const currentEnvironment = fish.environment || "N/A";
+
+                      return (
+                        <Grid
+                          item
+                          xs={12}
+                          sm={6}
+                          md={3}
+                          lg={3}
+                          xl={3}
+                          key={`${fish.id}-${index}`}
+                          sx={{
+                            display: "flex",
+                            minWidth: 0,
+                          }}
+                        >
+                          <Fade in timeout={300 + index * 100}>
+                            <Box sx={{ width: "100%", height: "100%" }}>
+                              <FishResultCard
+                                commonName={fish.common_name}
+                                scientificName={fish.scientific_name}
+                                typeLabel={
+                                  fish.common_name.split(" ")[0] || fish.family
+                                }
+                                taxonomy={{
+                                  class: fish.class,
+                                  order: fish.order,
+                                  family: fish.family,
+                                }}
+                                habitatInfo={{
+                                  maxDepth: fish.max_depth,
+                                  environment: fish.environment,
+                                }}
+                                imageUrl={fish.photo_url}
+                                statusLabel={currentStatus}
+                                rarityLabel={currentRarity}
+                                population={currentOrder}
+                                region={currentEnvironment}
+                                description={fish.description}
+                                onClick={() => {
+                                  setIsLoading(true);
+                                  fetchSpeciesDetails(
+                                    fish.id,
+                                    fish.common_name
+                                  );
+                                }}
+                              />
+                            </Box>
+                          </Fade>
+                        </Grid>
+                      );
+                    })}
+                  </Grid>
+                )}
+              </Box>
+            </Box>
+          </Fade>
+        )}
+        {searchResultsList.length > 0 && (
+          <Fade in timeout={500}>
+            <Box>
+              <Box sx={{ mb: 4 }}>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: 800,
+                    color: "#004d40",
+                    mb: 1,
+                    letterSpacing: "-0.5px",
+                  }}
+                >
+                  Πολλαπλά Αποτελέσματα Βρέθηκαν
+                </Typography>
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  sx={{ mb: 3 }}
+                >
+                  Παρακαλώ επιλέξτε το είδος που θέλετε να δείτε αναλυτικά:
+                </Typography>
+
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  {searchResultsList.map((result, index) => (
+                    <Fade in timeout={200 + index * 50} key={result.id}>
+                      <Box
+                        onClick={() => {
+                          setQuery(result.id.toString());
+                          setIsLoading(true);
+                          fetchSpeciesDetails(result.id, result.common_name);
+                        }}
+                        sx={{
+                          p: 3,
+                          borderRadius: 2,
+                          bgcolor: "white",
+                          boxShadow: 2,
+                          cursor: "pointer",
+                          transition: "all 0.3s",
+                          borderLeft: "4px solid #00bcd4",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          "&:hover": {
+                            boxShadow: 6,
+                            transform: "translateX(8px)",
+                            borderLeftColor: "#004d40",
+                          },
+                        }}
+                      >
+                        <Box>
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: 700, color: "#004d40" }}
+                          >
+                            {result.common_name || "N/A"}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ fontStyle: "italic" }}
+                          >
+                            {result.scientific_name || "N/A"}
+                          </Typography>
+                        </Box>
+                        <SearchIcon sx={{ color: "#00bcd4" }} />
+                      </Box>
+                    </Fade>
+                  ))}
+                </Box>
+              </Box>
+            </Box>
+          </Fade>
+        )}
+        <Box sx={{ minHeight: "150px", mt: 3 }}>
           {isLoading && (
-            <p style={{ color: "#60a5fa", textAlign: "center" }}>
-              🌊 Λήψη πλήρων δεδομένων από το FishBase...
-            </p>
+            <Fade in>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  py: 6,
+                  gap: 2,
+                }}
+              >
+                <CircularProgress size={56} sx={{ color: "#00bcd4" }} />
+                <Typography
+                  variant="h6"
+                  sx={{ color: "#004d40", fontWeight: 600 }}
+                >
+                  🌊 Λήψη πλήρων δεδομένων από το FishBase...
+                </Typography>
+              </Box>
+            </Fade>
           )}
 
           {error && (
-            <p
-              style={{
-                color: "#f87171",
-                padding: "16px",
-                border: "1px solid #ef4444",
-                borderRadius: "8px",
-                background: "rgba(31, 41, 55, 0.5)",
-                textAlign: "center",
-              }}
-            >
-              {error}
-            </p>
+            <Fade in>
+              <Alert
+                severity="error"
+                sx={{
+                  borderRadius: 2,
+                  boxShadow: 2,
+                  "& .MuiAlert-message": {
+                    fontWeight: 500,
+                  },
+                }}
+              >
+                {error}
+              </Alert>
+            </Fade>
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
     </div>
   );
 }

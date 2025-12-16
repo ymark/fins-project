@@ -1,7 +1,17 @@
-import React, { useState, useRef } from "react"; // ⬅️ NEW: Import useRef
+import React, { useState, useRef } from "react";
 import "./InfoPage.css";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Typography,
+  Box,
+} from "@mui/material";
 
-// --- FishData Interface (Must be the same as in FishSearch.tsx) ---
 interface FishData {
   id: number;
   species_code: number;
@@ -55,32 +65,159 @@ interface FishData {
   description: string;
   comments: string;
 
-  // --- EXPANDED FIELDS FOR EXTENDED TAXONOMIC DATA ---
-  genus_details: { diagnosis?: string; etymology?: string }; // Added optional chaining
+  genus_details: { diagnosis?: string; etymology?: string };
   family_details: {
     etymology?: string;
-    species_count?: number; // Old key (now replaced by API data)
-    number_of_valid_species?: number; // New key based on API
+    species_count?: number;
+    number_of_valid_species?: number;
     order_name?: string;
   };
-  order_details: { name?: string; order_name?: string }; // 'name' is the correct API key
+  order_details: { name?: string; order_name?: string };
   class_details: any;
-  common_names_list: any[];
+  // ** UPDATED LIST TYPE **
+  common_names_list: { common_name: string; language: string }[];
 
-  // Added photo URL for fish photo
   photo_url?: string;
 }
 
-// --- Helper Functions ---
+// ** NEW HELPER COMPONENT: CommonNamesTable & getLanguageEmoji **
+interface CommonNameItem {
+  common_name: string;
+  language: string;
+}
 
-/** Determines the color based on a vulnerability score (0-100) */
+const getLanguageEmoji = (language: string): string => {
+  switch (language.toLowerCase()) {
+    case "greek":
+      return "🇬🇷";
+    case "english":
+      return "🇬🇧";
+    case "spanish":
+      return "🇪🇸";
+    case "french":
+      return "🇫🇷";
+    case "portuguese":
+      return "🇵🇹";
+    case "german":
+      return "🇩🇪";
+    case "mandarin chinese":
+    case "chinese":
+      return "🇨🇳";
+    case "japanese":
+      return "🇯🇵";
+    case "italian":
+      return "🇮🇹";
+    case "russian":
+      return "🇷🇺";
+    case "turkish":
+      return "🇹🇷";
+    case "dutch":
+      return "🇳🇱";
+    default:
+      return "🌐";
+  }
+};
+
+const CommonNamesTable: React.FC<{ names: CommonNameItem[] }> = ({ names }) => {
+  if (!names || names.length === 0) {
+    return (
+      <div
+        className="full-width common-names-table-container"
+        style={{ border: "none", boxShadow: "none" }}
+      >
+        <p
+          className="common-names-label"
+          style={{ color: "var(--text-medium)" }}
+        >
+          Δεν υπάρχουν καταχωρημένες κοινές ονομασίες για αυτό το είδος.
+        </p>
+      </div>
+    );
+  }
+
+  // Group names by language
+  const groupedNames = names.reduce((acc, item) => {
+    const lang = item.language || "Άγνωστη Γλώσσα";
+    if (!acc[lang]) {
+      acc[lang] = [];
+    }
+    acc[lang].push(item.common_name);
+    return acc;
+  }, {} as Record<string, string[]>);
+
+  const displayData = Object.entries(groupedNames).map(
+    ([language, commonNames]) => ({
+      language,
+      names: commonNames.join("; "),
+    })
+  );
+
+  return (
+    <div className="full-width common-names-table-container">
+      <h4>Common Names in Various Languages</h4>
+      <Paper
+        elevation={3}
+        sx={{
+          bgcolor: "var(--light-bg)",
+          borderRadius: "10px",
+          overflow: "hidden",
+        }}
+      >
+        <TableContainer sx={{ maxHeight: 350 }}>
+          <Table stickyHeader size="small">
+            <TableHead>
+              <TableRow sx={{ bgcolor: "rgba(0, 188, 212, 0.1)" }}>
+                <TableCell
+                  sx={{
+                    color: "var(--primary-blue)",
+                    fontWeight: 700,
+                    width: "25%",
+                  }}
+                >
+                  Language
+                </TableCell>
+                <TableCell
+                  sx={{ color: "var(--primary-blue)", fontWeight: 700 }}
+                >
+                  Common Name(s)
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {displayData.map((row, index) => (
+                <TableRow
+                  key={index}
+                  sx={{
+                    "&:nth-of-type(odd)": { backgroundColor: "var(--card-bg)" },
+                    "&:nth-of-type(even)": {
+                      backgroundColor: "var(--light-bg)",
+                    },
+                  }}
+                >
+                  <TableCell className="language-flag">
+                    <span role="img" aria-label={row.language}>
+                      {getLanguageEmoji(row.language)}
+                    </span>
+                    {row.language}
+                  </TableCell>
+                  <TableCell className="common-name-value">
+                    {row.names}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+    </div>
+  );
+};
+
 const getVulnColor = (value: number): string => {
   if (value > 70) return "#dc2626"; // High (Red)
   if (value > 40) return "#f59e0b"; // Moderate (Orange)
   return "#10b981"; // Low (Green)
 };
-
-// --- Helper Components ---
 
 const InfoCard = ({
   title,
@@ -123,13 +260,11 @@ const VulnerabilityBar = ({
     <div className="vulnerability-bar-header">
       <span className="vulnerability-label">{label}:</span>
       <div className="vulnerability-bar-track">
-        {/* Fill color is now dynamic */}
         <div
           className="vulnerability-bar-fill"
           style={{ width: `${value}%`, backgroundColor: color }}
         ></div>
       </div>
-      {/* Value text color is also dynamic */}
       <span className="vulnerability-value" style={{ color: color }}>
         {value}
       </span>
@@ -177,6 +312,7 @@ export default function InfoPage({
   };
 
   const defaultFish: FishData = {
+    // ... (defaultFish structure)
     id: 143,
     species_code: 143,
     scientific_name: "Thunnus albacares",
@@ -244,24 +380,21 @@ export default function InfoPage({
     },
     family_details: {
       etymology: "Latin, scomber=mackerel",
-      number_of_valid_species: 54, // Updated default key
+      number_of_valid_species: 54,
     },
     order_details: { name: "Scombriformes" }, // Updated default key
     class_details: { name: "Teleostei" }, // Added default for class
-    common_names_list: [{ name: "Ahi" }, { name: "Allison's tuna" }],
-
+    common_names_list: [],
     photo_url: "https://placehold.co/320x280/1a568b/ffffff?text=Yellowfin+Tuna",
   };
 
   const fishData = fish || defaultFish;
 
   const renderTabContent = () => {
-    // ⬅️ NEW: Apply ref only to the Description content's wrapper for scrolling
     const tabContentRef = activeTab === "description" ? descriptionRef : null;
 
     switch (activeTab) {
       case "classification":
-        // Accessing details safely using optional chaining where possible, or defaulting to an empty object
         const genusDetails = fishData.genus_details || {};
         const familyDetails = fishData.family_details || {};
         const orderDetails = fishData.order_details || {};
@@ -296,35 +429,10 @@ export default function InfoPage({
             </InfoCard>
 
             <InfoCard title="Extended Taxonomic Details">
-              {fishData.common_names_list &&
-                fishData.common_names_list.length > 0 && (
-                  <div className="common-names-list-wrapper">
-                    <span className="common-names-label">
-                      Other Common Names:
-                    </span>
-                    <ul className="common-names-list">
-                      {fishData.common_names_list
-                        .slice(0, 5)
-                        .map((cn: any, i: number) => (
-                          <li key={i}>{cn.name || cn.common_name || "N/A"}</li>
-                        ))}
-                      {fishData.common_names_list.length > 5 && (
-                        <li>
-                          ...and {fishData.common_names_list.length - 5} more
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                )}
-              {/* NEW DATA ROWS - Safely accessing details */}
-
-              {/* ΔΙΟΡΘΩΣΗ 1: Χρήση του κλειδιού 'name' για την Τάξη (Order) */}
               <DataRow label="Order" value={orderDetails.name || "N/A"} />
 
-              {/* ΝΕΟ: Εμφάνιση Κλάσης (Class) */}
               <DataRow label="Class" value={classDetails.name || "N/A"} />
 
-              {/* ΔΙΟΡΘΩΣΗ 2: Χρήση του κλειδιού 'number_of_valid_species' */}
               <DataRow
                 label="Total Species in Family"
                 value={
@@ -341,7 +449,6 @@ export default function InfoPage({
                 label="Genus Etymology"
                 value={genusDetails.etymology || "N/A"}
               />
-              {/* FIXED: Safer Substring for Diagnosis */}
               <DataRow
                 label="Genus Diagnosis"
                 value={
@@ -350,8 +457,11 @@ export default function InfoPage({
                     : "N/A"
                 }
               />
-              {/* END NEW DATA ROWS */}
             </InfoCard>
+
+            <div className="full-width">
+              <CommonNamesTable names={fishData.common_names_list} />
+            </div>
 
             <InfoCard title="Taxonomic Status">
               <DataRow label="Status" value={fishData.taxonomic_issue} />
@@ -421,7 +531,6 @@ export default function InfoPage({
         );
 
       case "conservation":
-        // Dynamic colors implemented here
         const fishingColor = getVulnColor(fishData.fishing_vulnerability_value);
         const climateColor = getVulnColor(fishData.vulnerability_climate_value);
 
@@ -471,7 +580,6 @@ export default function InfoPage({
               <div className="other-methods-list-wrapper">
                 <span className="other-methods-label">Other Methods:</span>
                 <ul className="other-methods-list">
-                  {/* Using the new pill-style list for visual enhancement */}
                   {fishData.other_catching_methods.map((method, i) => (
                     <li key={i} className="method-pill">
                       {method}
@@ -541,7 +649,6 @@ export default function InfoPage({
         </svg>
       </button>
 
-      {/* NEW CSS-STYLED HEADER (RESTORED ORIGINAL STRUCTURE) */}
       <header className="fins-header">
         <div className="fins-logo-group">
           <div className="fins-title-container">
@@ -556,9 +663,8 @@ export default function InfoPage({
           />
         </div>
 
-        {/* Home Button (Mimicking Link with anchor tag) */}
+        {/* Home Button*/}
         <a href="/" className="fins-home-btn-wrapper">
-          {/* *** Simple, modern, filled home icon. *** */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -567,27 +673,22 @@ export default function InfoPage({
             strokeWidth="0"
             className="fins-home-btn-img"
           >
-            {/* The main house shape (modern filled look) */}
             <path d="M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8z" />
           </svg>
         </a>
       </header>
 
-      {/* Main Content Grid */}
       <div className="main-content-grid">
-        {/* Main Column */}
         <div className="main-column">
           {/* Hero Section */}
           <div className="hero-section">
             <div className="hero-grid">
-              {/* === PHOTO CONTAINER START (Now uses fishData.photo_url) === */}
               <div className="image-container">
                 <img
                   src={fishData.photo_url}
                   alt={`Photo for ${fishData.common_name} (Placeholder)`}
                   className="fish-photo-actual"
                   onError={(e) => {
-                    // Fallback in case the provided photo_url fails
                     const target = e.target as HTMLImageElement;
                     target.src = `https://placehold.co/320x280/1a568b/ffffff?text=${
                       fishData.common_name
@@ -598,21 +699,18 @@ export default function InfoPage({
                   }}
                 />
               </div>
-              {/* === PHOTO CONTAINER END === */}
 
               <div>
                 <h1 className="fish-common-name">{fishData.common_name}</h1>
                 <p className="fish-scientific-name styled-name">
                   {fishData.scientific_name}
                 </p>
-                {/* ⬅️ MODIFIED: Added onClick and a pointer cursor style */}
                 <div
                   className="description-box"
                   onClick={scrollToDescription}
                   style={{ cursor: "pointer" }}
                 >
                   <p className="description-text">
-                    {/* Only show the first 200 characters followed by a cue */}
                     {fishData.description.substring(0, 200)}...
                     <span
                       style={{
@@ -657,17 +755,15 @@ export default function InfoPage({
         <div className="sidebar-column">
           <SidebarCard title="Distribution Map">
             <img
-              src={mapImageUrl} // Try the unreliable external URL first
+              src={mapImageUrl}
               alt={`Distribution map for ${fishData.common_name}`}
               className="map-image-actual"
               onError={(e) => {
-                // If the external image fails (red X), replace its src with the guaranteed placeholder.
                 const target = e.target as HTMLImageElement;
                 target.src = placeholderMapUrl;
                 target.onerror = null;
               }}
             />
-            {/* End of Map Modification */}
             <p className="map-environment">{fishData.preferred_environment}</p>
           </SidebarCard>
 

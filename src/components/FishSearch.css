@@ -1,4 +1,3 @@
-
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap");
 
 .font-sans {
@@ -7,38 +6,54 @@
 
 /* --- REFINED COLOR VARIABLES (Retaining core accents but introducing light base) --- */
 :root {
-    --primary-blue: #091a32; /* Dark Navy for text/accents */
-    --accent-blue: #00bcd4; /* Bright Cyan */
+    --primary-blue: #091a32; /* Dark Navy for text/accents (used in header) */
+    --accent-blue: #00bcd4; /* Bright Cyan (used in components) */
     --dark-navy: #091a32;
-    --light-bg-base: #f0f7ff; /* Very Light Blue Base */
-    --light-text-color: #121820; /* Dark text for light background */
+    /* Removed old light colors as background is now dark */
+    --light-text-color: #121820; 
 }
 
 
-/* 1. Background for the component container (LIGHTENED) */
-html, body, .ocean-bg {
-    height: 100%;
-    min-height: 100vh;
+/* 1. Background for the component container - IMPLEMENTING THE NEW DARK GRADIENT */
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Prevents horizontal scrolling */
+    overflow-y: scroll; 
 }
 .ocean-bg {
-  /* CHANGED: Very light, subtle blue gradient for a brighter page */
-  background: linear-gradient(180deg, var(--light-bg-base), #e6f0ff);
+    min-height: 100vh; 
+    height: auto; 
+    /* ------------------------------------------------------------------ */
+    /* *** NEW DARK GRADIENT IMPLEMENTATION (Adjusted for image dark blue) *** */
+    /* Using linear-gradient with the requested colors for a deep-sea effect */
+    background: linear-gradient(
+        to bottom,
+        #0C1629 0%,   /* Start with a deep dark blue-black */
+        #0B1527 30%,  /* Transition to a deeper navy */
+        #1A253A 70%,  /* Transition to a slightly lighter, rich blue */
+        #1B263B 100%  /* End with a darker blue/gray */
+    );
+    /* Set main text color to white for contrast against the dark background */
+    color: #f0f7ff; 
+    /* ------------------------------------------------------------------ */
 }
-
-/* 2. Styling for the input field (INVERTED COLORS) */
+/* 2. Styling for the input field (REVERTING TO DARK THEME FOR CONTRAST) */
 .search-input {
-  border-color: #b3d9ff !important; 
-  background-color: white !important; 
-  color: var(--light-text-color) !important;
+  /* Using specific colors for the dark theme input */
+  border-color: #4a5568 !important; /* Muted border for dark background */
+  background-color: #1c2636 !important; /* Very dark input field background */
+  color: white !important; /* White text for contrast */
   outline: none;
-  box-shadow: 0 0 0 3px rgba(100, 161, 232, 0.3);
   transition: all 0.3s ease;
 }
 .search-input::placeholder {
-    color: #8899aa;
+    color: #8b95a8; /* Lighter placeholder text */
 }
 
 /* 3. Styling for the search button (RETAINED ACCENT COLOR) */
+/* (Keeping this generic search-button style in case it's used elsewhere, 
+   but centered-search-button will be customized.) */
 .search-button {
   background-color: #3b82f6; /* Bright blue color */
   transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
@@ -61,22 +76,18 @@ html, body, .ocean-bg {
   opacity: 0.8;
 }
 
-.fins-title {
-  /* This is now styled by the header section below */
-}
-
-
+/* --- RESTORED ORIGINAL HEADER STYLES (No search bar) --- */
 .fins-header {
     width: 100%;
     height: 100px;
-    /* RETAINED DARK GRADIENT for strong contrast against the light page */
+    /* Header retains original dark look (no gradient change) */
     background: linear-gradient(135deg, 
         var(--primary-blue),
         var(--dark-navy)
     );
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-between; /* Space out logo group and home button */
     
     padding-left: 16px; 
     padding-right: 16px; 
@@ -84,7 +95,7 @@ html, body, .ocean-bg {
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); 
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5); /* Stronger shadow for separation */
 }
 
 /* Responsive Padding (Crucial for mobile/desktop layout) */
@@ -114,7 +125,7 @@ html, body, .ocean-bg {
     flex-direction: column;
 }
 
-/* Title and subtitle colors remain bright white/blue for contrast against dark header */
+/* Original Title size/style */
 .fins-title {
     color: white;
     font-size: 46px; 
@@ -125,6 +136,12 @@ html, body, .ocean-bg {
     margin: 0;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
+
+.fins-title-small {
+    /* Ensure small title is hidden or overridden */
+    display: none; 
+}
+
 
 .fins-subtitle {
     color: #9ac2ef; 
@@ -144,6 +161,11 @@ html, body, .ocean-bg {
     height: 65px;
     opacity: 0.9;
     transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.fins-logo-img-small {
+    /* Ensure small logo is hidden or overridden */
+    display: none; 
 }
 
 .fins-logo-group:hover .fins-logo-img {
@@ -178,65 +200,10 @@ html, body, .ocean-bg {
     height: 32px;
 }
 
-.header-search-container {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-    max-width: 450px; 
-    /* Lightened container background */
-    background-color: rgba(255, 255, 255, 0.2); 
-    padding: 8px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-.header-search-container-large {
-    max-width: 600px; 
-    padding: 10px; 
-}
-
-.header-search-input {
-    flex-grow: 1;
-    padding: 10px 15px !important; 
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    border: 2px solid transparent !important;
-}
-
-.header-search-input-large {
-    padding: 12px 18px !important; /* Bigger input padding */
-    font-size: 16px !important; /* Larger text */
-}
-
-.header-search-input:focus {
-    border-color: #64a1e8 !important; 
-    box-shadow: 0 0 0 2px rgba(100, 161, 232, 0.5) !important;
-}
-
-.header-search-button {
-    flex-shrink: 0;
-    padding: 10px 15px !important; 
-    width: auto !important;
-    border-radius: 8px !important;
-    font-size: 16px !important; 
-}
-
-.header-search-button-large {
-    padding: 12px 20px !important; /* Bigger button padding */
-    font-size: 18px !important; /* Larger icon */
-}
-
-
-/* Responsive adjustments (RETAINED) */
+/* Responsive adjustments (ADJUSTED FOR NO SEARCH IN HEADER) */
 @media (max-width: 1024px) {
     .fins-header {
-        justify-content: space-around;
-    }
-    .header-search-container {
-        max-width: 350px; 
-    }
-    .header-search-container-large {
-        max-width: 450px; 
+        justify-content: space-between;
     }
     
     .fins-logo-group {
@@ -257,54 +224,33 @@ html, body, .ocean-bg {
 
 @media (max-width: 768px) {
     .fins-header {
-        flex-direction: column;
+        flex-direction: row; 
         height: auto;
         padding: 15px 16px;
     }
     
-    .fins-logo-group, .fins-home-btn-wrapper, .header-search-container {
-        width: 100%;
-        max-width: 100%; 
-        margin-bottom: 10px;
-    }
-
-    .header-search-container-large {
-        max-width: 100%; 
-    }
-    
     .fins-logo-group {
-        justify-content: space-between;
+        width: auto;
+        justify-content: flex-start;
         align-items: center;
         height: auto;
-        margin-bottom: 15px;
-    }
-    
-    .header-search-container {
-        order: 3; 
-        padding: 5px;
+        margin-bottom: 0;
     }
     
     .fins-home-btn-wrapper {
         order: 2; 
-        position: absolute;
-        top: 20px;
-        right: 16px;
+        position: static;
         width: auto;
     }
     
-    .header-search-input-large {
-        padding: 10px 14px !important; 
-        font-size: 14px !important;
-    }
-    .header-search-button-large {
-        padding: 10px 16px !important; 
-        font-size: 16px !important;
+    .fins-logo-img {
+        display: none;
     }
 }
 
 .main-content-area {
-    /* Text color in main content area must now be dark */
-    color: var(--light-text-color) !important;
+    /* Text color in main content area must now be white for visibility */
+    color: white !important;
 }
 
 .featured-section-wrapper {
@@ -312,115 +258,182 @@ html, body, .ocean-bg {
 }
 
 .featured-title {
-    color: var(--primary-blue);
+    /* Title color should remain bright/accented */
+    color: var(--accent-blue);
     font-size: 32px;
     font-weight: 800;
     text-align: left; 
     margin-bottom: 30px;
     text-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    padding-left: 15px; /* Spacing for visual alignment */
+    padding-left: 15px; 
 }
 
 /* Container for the list of featured cards */
+/* *** RESTORED/CLEANED UP: This class is not used in FishSearch.tsx. *** */
 .featured-list-container {
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Spacing between cards */
+    gap: 20px; 
+    padding: 0 15px; 
 }
 
-.featured-list-card {
-    /* Base Card Styling */
-    background: white; 
-    border-radius: 12px;
-    padding: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 1px solid #e1e7f0; 
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); 
 
-    /* Layout: Photo on left, text on right */
-    display: flex;
-    align-items: flex-start;
-    gap: 25px;
+.search-results-instruction {
+    /* Adjust text color for dark background */
+    color: #b3d9ff;
+    margin-bottom: 20px;
+    padding-left: 15px;
 }
 
-.featured-list-card:hover {
-    background: #f8f8f8;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 188, 212, 0.2); 
-    border-color: #64a1e8;
-}
-
-.card-photo-wrapper {
-    flex-shrink: 0; /* Prevents image from shrinking */
-    width: 150px;
-    height: 120px;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.featured-list-img {
+/* --- HERO SECTION STYLES (Retained) --- */
+.hero-search-wrapper {
+    /* Full width, centered text, and padding for the hero section */
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+    /* INCREASED TOP PADDING TO PREVENT SEARCH BAR CUT-OFF */
+    padding: 40px 20px 80px 20px; 
+    text-align: center;
+    /* This section has the background gradient from the dark body */
+    background: linear-gradient(
+        to bottom,
+        #0C1629 0%,   
+        #0B1527 100% 
+    );
 }
 
-.card-info-main {
+/* ****************************************************** */
+/* *** MODIFIED SEARCH BAR STYLES TO MATCH IMAGE *** */
+/* ****************************************************** */
+.centered-search-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 800px; 
+    
+    /* 1. Gradient border/background for the entire container */
+    padding: 1px; /* Very thin border around the input */
+    margin: 0 auto;
+    border-radius: 12px; /* Slight curve */
+    
+    /* Specific Gradient from Image (Teal/Cyan to Orange/Red) */
+    background: linear-gradient(
+        90deg, 
+        #2AB4C3 0%,   /* Cyan/Teal start */
+        #FF8C42 100% /* Orange/Red end */
+    );
+    
+    /* 2. Box Shadow (Subtle dark shadow and minimal glow) */
+    box-shadow: 
+        0 4px 10px rgba(0, 0, 0, 0.5), /* Dark shadow beneath */
+        0 0 8px rgba(42, 180, 195, 0.3); /* Subtle teal glow */
+    transition: all 0.3s ease-in-out;
+}
+
+.centered-search-container:focus-within {
+    /* Enhanced shadow on focus */
+    box-shadow: 
+        0 6px 15px rgba(0, 0, 0, 0.7), 
+        0 0 12px rgba(42, 180, 195, 0.6);
+}
+
+/* --- Input Field Styles --- */
+.centered-search-input {
     flex-grow: 1;
+    height: 45px; /* Define fixed height for easier alignment */
+    padding: 15px 25px !important; 
+    margin: 0; 
+    
+    /* 3. Input background: Dark with transparency (to show blur/shadows better) */
+    /* ADJUSTED BACKGROUND TO INCLUDE SLIGHT TRANSPARENCY */
+    background-color: rgba(18, 26, 40, 0.8) !important; /* Slightly more transparent dark background */
+    
+    
+    /* *** ADDED BLUR EFFECT *** */
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px); /* For Safari support */
+    
+    border-radius: 12px 0 0 12px !important; /* Rounded only on the left */
+    font-size: 18px !important; 
+    border: none !important;
+    color: #e8ebf0 !important; /* Light text color */
+    outline: none !important;
 }
 
-.card-common-name {
-    font-size: 24px;
-    font-weight: 800;
-    color: var(--primary-blue);
-    margin: 0 0 5px 0;
-    line-height: 1.2;
+/* --- Search Button Styles --- */
+.centered-search-button {
+    flex-shrink: 0;
+    width: 60px; /* Width to form a squarish shape with the height of input */
+    height: 45px; /* Match the height of the input field */
+    margin: 0; 
+    
+    /* 4. Gradient on the button to match the right side of the container border */
+    background: linear-gradient(
+        180deg, 
+        #FF8C42 0%,   /* Orange/Red top */
+        #D84C23 100%  /* Darker red bottom */
+    );
+    
+    /* Rounded only on the right */
+    border-radius: 0 12px 12px 0 !important; 
+    padding: 0 !important; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Remove shadow on the button itself as the container provides the glow */
+    box-shadow: none; 
 }
 
-.card-scientific-name {
-    font-size: 16px;
-    font-style: italic;
-    color: #556677;
-    margin: 0 0 15px 0;
+.centered-search-button:hover:not(:disabled) {
+    /* Slightly darker gradient on hover */
+    background: linear-gradient(
+        180deg, 
+        #FF9800 0%, 
+        #B8401D 100%
+    );
+    transform: none; 
+    box-shadow: none;
 }
+/* ****************************************************** */
+/* *** END MODIFIED SEARCH BAR STYLES *** */
+/* ****************************************************** */
 
-.card-details-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Two columns for Taxonomy and Habitat */
-    gap: 20px;
-}
 
-.card-taxonomy h4, .card-habitat h4 {
-    color: var(--primary-blue);
-    font-size: 16px;
-    font-weight: 700;
-    margin: 0 0 8px 0;
-}
-
-.card-taxonomy p, .card-habitat p {
-    font-size: 14px;
-    margin: 3px 0;
-    line-height: 1.4;
-    color: #333;
-}
-.card-taxonomy span, .card-habitat span {
-    font-weight: 600;
-}
-
-/* Mobile Adjustments for Card Layout */
-@media (max-width: 640px) {
-    .featured-list-card {
-        flex-direction: column; /* Stack image and text */
-        padding: 15px;
-        gap: 15px;
+/* Ensure the title text breaks appropriately on smaller screens */
+@media (max-width: 600px) {
+    .hero-search-wrapper .MuiTypography-h3 {
+        font-size: 2rem !important;
+        letter-spacing: -1px !important;
     }
-    .card-photo-wrapper {
-        width: 100%;
-        height: 150px;
+    .hero-search-wrapper > .MuiBox-root > .MuiBox-root { /* The title wrapper box */
+        /* Revert to standard vertical stacking from the last revert */
+        flex-direction: row !important;
+        align-items: center !important;
+        padding-left: 0 !important;
     }
-    .card-details-grid {
-        grid-template-columns: 1fr; /* Stack Taxonomy and Habitat */
-        gap: 15px;
+    .hero-search-wrapper .MuiTypography-h3:last-of-type { 
+        margin-left: 5px !important;
+        margin-top: 0 !important;
+    }
+    
+    /* Adjust Search Bar for Mobile */
+    .centered-search-container {
+        border-radius: 10px; /* Smaller radius */
+    }
+    .centered-search-input {
+        font-size: 16px !important; 
+        padding: 12px 20px !important;
+        height: 50px;
+        border-radius: 9px 0 0 9px !important;
+    }
+    .centered-search-input::placeholder {
+        font-size: 16px !important; 
+    }
+    .centered-search-button {
+        width: 50px;
+        height: 50px;
+        border-radius: 0 9px 9px 0 !important;
+    }
+    .centered-search-button .MuiSvgIcon-root {
+        font-size: 28px !important;
     }
 }

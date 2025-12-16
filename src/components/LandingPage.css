@@ -1,28 +1,3 @@
-/* --- ENHANCED ANIMATION KEYFRAMES --- */
-@keyframes slowZoom {
-    0% {
-        transform: scale(1) rotate(0deg);
-    }
-    50% {
-        transform: scale(1.08) rotate(0.5deg);
-    }
-    100% {
-        transform: scale(1) rotate(0deg);
-    }
-}
-
-@keyframes float {
-    0%, 100% {
-        transform: translateY(0px) rotate(0deg);
-    }
-    33% {
-        transform: translateY(-25px) rotate(3deg);
-    }
-    66% {
-        transform: translateY(-15px) rotate(-2deg);
-    }
-}
-
 @keyframes shimmer {
     0% {
         background-position: -1000px 0;
@@ -33,47 +8,18 @@
 }
 
 @keyframes glow {
+    /* REMOVED: This animation is no longer used for the header text glow */
     0%, 100% {
-        text-shadow: 0 0 10px rgba(185, 205, 217, 0.5), 
-                     0 0 20px rgba(185, 205, 217, 0.3), 
-                     0 0 30px rgba(185, 205, 217, 0.2),
-                     0 0 40px rgba(125, 174, 255, 0.1);
+        text-shadow: 0 0 1px transparent; 
     }
     50% {
-        text-shadow: 0 0 20px rgba(185, 205, 217, 0.9), 
-                     0 0 30px rgba(185, 205, 217, 0.6), 
-                     0 0 40px rgba(185, 205, 217, 0.4),
-                     0 0 60px rgba(125, 174, 255, 0.3),
-                     0 0 80px rgba(125, 174, 255, 0.2);
+        text-shadow: 0 0 1px transparent; 
     }
 }
-
-@keyframes slideInLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
@@ -86,18 +32,18 @@
         box-shadow: 0 0 0 0 rgba(125, 174, 255, 0.7);
     }
     100% {
-        box-shadow: 0 0 0 20px rgba(125, 174, 255, 0);
+        box-shadow: 0 0 0 15px rgba(125, 174, 255, 0);
     }
 }
 
 @keyframes borderGlow {
     0%, 100% {
-        border-color: rgba(125, 174, 255, 0.3);
-        box-shadow: 0 0 20px rgba(125, 174, 255, 0.2);
+        border-color: rgba(125, 174, 255, 0.2);
+        box-shadow: 0 0 15px rgba(125, 174, 255, 0.15);
     }
     50% {
-        border-color: rgba(125, 174, 255, 0.6);
-        box-shadow: 0 0 40px rgba(125, 174, 255, 0.4);
+        border-color: rgba(125, 174, 255, 0.4);
+        box-shadow: 0 0 30px rgba(125, 174, 255, 0.3);
     }
 }
 
@@ -107,20 +53,8 @@
         opacity: 1;
     }
     50% {
-        transform: scale(1.05);
-        opacity: 0.9;
-    }
-}
-
-@keyframes waveMove {
-    0% {
-        transform: translateX(0) translateY(0);
-    }
-    50% {
-        transform: translateX(-25px) translateY(-10px);
-    }
-    100% {
-        transform: translateX(0) translateY(0);
+        transform: scale(1.03);
+        opacity: 0.95;
     }
 }
 
@@ -136,39 +70,93 @@
     }
 }
 
+
+/* --- NEW: Bubble Animation --- */
+@keyframes bubbles {
+    0% {
+        transform: translateY(0) scale(0);
+        opacity: 0;
+    }
+    20% {
+        transform: translateY(0) scale(0.2);
+        opacity: 0.2;
+    }
+    100% {
+        transform: translateY(-1000px) scale(1.2);
+        opacity: 0;
+    }
+}
+
+/* --- Keyframes (Restored Essential Animations) --- */
+@keyframes slowZoom {
+    /* Used for background image */
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+@keyframes waveMove {
+    /* Used for background wave pattern */
+    0% {
+        background-position: 0% 0%;
+    }
+    100% {
+        background-position: 100% 100%;
+    }
+}
+@keyframes logoWave {
+    /* Used for the logo text */
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-2px);
+    }
+}
+/* --- End of Keyframes --- */
+
+
 /*
  * Base Utility and Custom Styles
  */
 
 /* Enhanced Custom Colors with Advanced Gradients */
 .bg-ocean-overlay { 
-    background: linear-gradient(135deg, rgba(2, 2, 42, 0.45) 0%, rgba(22, 30, 83, 0.40) 50%, rgba(2, 2, 42, 0.45) 100%);
-    backdrop-filter: blur(3px) saturate(1.2);
+    background: linear-gradient(135deg, rgba(2, 2, 42, 0.3) 0%, rgba(22, 30, 83, 0.25) 50%, rgba(2, 2, 42, 0.3) 100%);
+    backdrop-filter: blur(2px) saturate(1.1);
 }
 
 .border-ocean-border { 
-    border-color: rgba(125, 174, 255, 0.4);
-    border-image: linear-gradient(45deg, rgba(125, 174, 255, 0.4), rgba(185, 205, 217, 0.6), rgba(125, 174, 255, 0.4)) 1;
+    border-color: rgba(125, 174, 255, 0.3);
+    border-image: linear-gradient(45deg, rgba(125, 174, 255, 0.3), rgba(185, 205, 217, 0.5), rgba(125, 174, 255, 0.3)) 1;
     animation: borderGlow 3s ease-in-out infinite;
 }
 
 .text-ocean-headline { 
-    color: #B9CDD9; 
-    text-shadow: 0 0 10px rgba(185, 205, 217, 0.6), 
-                 0 0 20px rgba(185, 205, 217, 0.4),
-                 0 0 30px rgba(185, 205, 217, 0.3),
-                 0 0 50px rgba(125, 174, 255, 0.2);
-    animation: glow 3s ease-in-out infinite;
+    /* FIXED: Revert to white/near-white */
+    color: #ffffff; 
+    /* FIXED: Remove all glow shadows, keep only dark shadows for definition */
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8), 
+                 0 0 5px rgba(0, 0, 0, 0.4);
+    /* REMOVED: glow animation */
+    animation: none;
 }
 
 .text-ocean-text { 
-    color: #CADBE1;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4),
-                 0 0 15px rgba(125, 174, 255, 0.1);
+    /* FIXED: Revert to white/near-white */
+    color: #E0E7FF; /* Off-white for paragraphs */
+    font-weight: 500;
+    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.8),
+                 0 0 8px rgba(0, 0, 0, 0.6);
 }
 
 .bg-ocean-button { 
-    background: linear-gradient(135deg, #161E53 0%, #1a2560 50%, #161E53 100%);
+    background: linear-gradient(135deg, #1A225F 0%, #222C6F 50%, #1A225F 100%);
     background-size: 200% 200%;
     animation: gradientShift 4s ease infinite;
     position: relative;
@@ -185,44 +173,46 @@
     background: linear-gradient(
         45deg,
         transparent,
-        rgba(125, 174, 255, 0.15),
+        rgba(125, 174, 255, 0.1),
         transparent
     );
     transform: rotate(45deg);
-    animation: shimmer 3s infinite;
+    animation: shimmer 4s infinite;
 }
 
 .bg-ocean-button::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at center, rgba(125, 174, 255, 0.1), transparent 70%);
+    background: radial-gradient(circle at center, rgba(125, 174, 255, 0.05), transparent 70%);
     opacity: 0;
     transition: opacity 0.3s ease;
 }
 
 .text-ocean-button-text { 
-    color: #D5F8FB;
-    text-shadow: 0 0 15px rgba(213, 248, 251, 0.6),
-                 0 0 30px rgba(125, 174, 255, 0.3);
+    /* FIXED: Revert to white/near-white */
+    color: #ffffff;
+    font-weight: 700; 
+    /* FIXED: Minimal glow for button text */
+    text-shadow: 0 0 5px rgba(42, 180, 195, 0.3);
 }
 
 /* Enhanced Custom Effects */
 .stroke-text {
-    -webkit-text-stroke: 1px rgba(125, 174, 255, 0.5);
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4),
-                 0 0 25px rgba(125, 174, 255, 0.3),
-                 0 0 50px rgba(125, 174, 255, 0.1);
+    -webkit-text-stroke: 0.5px rgba(125, 174, 255, 0.4);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3),
+                 0 0 15px rgba(125, 174, 255, 0.2),
+                 0 0 25px rgba(125, 174, 255, 0.1);
 }
 
 .stroke-text-button {
-    -webkit-text-stroke: 1px rgba(125, 174, 255, 0.5);
+    -webkit-text-stroke: 0.8px rgba(125, 174, 255, 0.4);
 }
 
 .shadow-button-inset {
-    box-shadow: inset 0 4px 12px 0 rgba(0, 0, 0, 0.4),
-                0 0 20px rgba(125, 174, 255, 0.3),
-                0 0 40px rgba(125, 174, 255, 0.1);
+    box-shadow: inset 0 3px 8px 0 rgba(0, 0, 0, 0.3),
+                0 0 15px rgba(125, 174, 255, 0.2),
+                0 0 30px rgba(125, 174, 255, 0.08);
 }
 
 /* --- Base and Layout Container --- */
@@ -230,7 +220,7 @@
     position: relative;
     min-height: 100vh;
     width: 100%;
-    overflow: hidden;
+    overflow: hidden; /* Prevent body scroll if content tries to overflow */
 }
 
 .fins-bg-container {
@@ -243,9 +233,9 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 20% 30%, rgba(125, 174, 255, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(185, 205, 217, 0.1) 0%, transparent 50%);
-    animation: waveMove 20s ease-in-out infinite;
+    background: radial-gradient(circle at 20% 30%, rgba(125, 174, 255, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(185, 205, 217, 0.08) 0%, transparent 50%);
+    animation: waveMove 25s ease-in-out infinite;
     pointer-events: none;
     z-index: 1;
 }
@@ -254,7 +244,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 30% 50%, rgba(125, 174, 255, 0.12) 0%, transparent 50%);
+    background: radial-gradient(circle at 30% 50%, rgba(125, 174, 255, 0.08) 0%, transparent 50%);
     pointer-events: none;
     z-index: 2;
 }
@@ -264,24 +254,27 @@
     height: 100%;
     object-fit: cover;
     animation: slowZoom 45s infinite ease-in-out;
-    filter: brightness(0.85) contrast(1.15) saturate(1.1);
+    filter: contrast(1.1);
 }
 
 .fins-overlay {
     position: absolute;
     inset: 0;
     z-index: 10;
-    border: 1px solid rgba(125, 174, 255, 0.4);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4),
-                inset 0 0 80px rgba(125, 174, 255, 0.08),
-                inset 0 0 40px rgba(185, 205, 217, 0.05);
+    border: 1px solid rgba(125, 174, 255, 0.2);
+    box-shadow: 0 3px 20px rgba(0, 0, 0, 0.3),
+                inset 0 0 60px rgba(125, 174, 255, 0.05),
+                inset 0 0 30px rgba(185, 205, 217, 0.03);
     animation: borderGlow 4s ease-in-out infinite;
 }
 
 .fins-content {
+    /* KEY CHANGE: Fixed height to prevent scroll overflow */
     position: relative;
     z-index: 20;
     min-height: 100vh;
+    height: 100vh; 
+    overflow: hidden; /* Ensure content doesn't create internal scroll, relying on viewport height */
 }
 
 /* --- Header/Logo --- */
@@ -300,61 +293,66 @@
 }
 
 .fins-logo-group:hover {
-    transform: scale(1.03) translateY(-2px);
-    filter: drop-shadow(0 10px 20px rgba(125, 174, 255, 0.3));
+    transform: scale(1.02) translateY(-1px);
+
+    filter: drop-shadow(0 5px 15px rgba(125, 174, 255, 0.2));
 }
 
 .fins-logo-text h1 {
-    color: white;
-    font-weight: 800;
-    font-size: 2.25rem;
-    letter-spacing: 2.4px;
+    /* FIXED: Revert to white color */
+    color: white; 
+    font-weight: 900;
+    /* BASELINE: Resetting to original mobile size */
+    font-size: 2.5rem;
+    letter-spacing: 3px;
     text-transform: uppercase;
     line-height: 1;
-    text-shadow: 0 0 25px rgba(255, 255, 255, 0.4),
-                 0 4px 15px rgba(0, 0, 0, 0.6),
-                 0 0 50px rgba(125, 174, 255, 0.3);
-    animation: glow 4s ease-in-out infinite;
+    /* FIXED: Minimal text shadow (no glow/radiation) */
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7); 
+    /* FIXED: Removed glow animation, keeping only wave */
+    animation: logoWave 2s ease-in-out infinite 1s; 
     transition: letter-spacing 0.3s ease;
 }
 
 .fins-logo-text h1:hover {
-    letter-spacing: 3px;
+    letter-spacing: 3.5px;
 }
 
 .fins-logo-text p {
+    /* FIXED: Revert to white color */
     color: white;
-    font-size: 0.625rem;
-    letter-spacing: 0.5px;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
     text-transform: uppercase;
-    font-family: Jaldi, sans-serif;
-    margin-top: 0.25rem;
+    font-family: Inter, sans-serif;
+    font-weight: 400;
+    margin-top: 0.3rem;
     opacity: 0.95;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
 }
 
 .fins-logo-img {
-    width: 5rem;
-    height: 4rem;
+    width: 4.5rem;
+    height: 3.5rem;
     object-fit: contain;
-    margin-top: -0.8rem;
-    margin-left: -4.5rem;
-    animation: float 6s ease-in-out infinite;
-    filter: drop-shadow(0 0 15px rgba(125, 174, 255, 0.6))
-            drop-shadow(0 0 30px rgba(125, 174, 255, 0.3));
+    margin-top: -1.9rem;
+    margin-left: -8.5rem;
+    animation: float 6s ease-in-out infinite; 
+    filter: drop-shadow(0 0 10px rgba(125, 174, 255, 0.4))
+            drop-shadow(0 0 20px rgba(125, 174, 255, 0.2));
     transition: filter 0.3s ease;
 }
 
 .fins-logo-img:hover {
-    filter: drop-shadow(0 0 25px rgba(125, 174, 255, 0.8))
-            drop-shadow(0 0 50px rgba(125, 174, 255, 0.5));
+    filter: drop-shadow(0 0 15px rgba(125, 174, 255, 0.6))
+            drop-shadow(0 0 30px rgba(125, 174, 255, 0.4));
 }
 
 /* --- Main Content --- */
 .fins-main {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
-    padding-top: 1rem; 
+    padding-top: 2rem;
 }
 
 .fins-grid {
@@ -373,47 +371,58 @@
 }
 
 .fins-headline {
-    font-weight: 700;
-    font-size: 1.875rem;
-    letter-spacing: 2.4px;
+    font-weight: 900;
+    /* DEFAULT: Setting to original laptop size (4.5rem) */
+    font-size: 4.5rem; 
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    line-height: 1.25;
+    line-height: 1.1;
     position: relative;
     transition: letter-spacing 0.3s ease;
+
+.fins-headline {
+    /* ... other properties ... */
+    background: linear-gradient(135deg, #ffffff 0%, #a0c3e8 50%, #ffffff 100%);
+    background-size: 100% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
 }
 
 .fins-headline:hover {
-    letter-spacing: 3px;
+    letter-spacing: 2px;
 }
 
 .fins-headline::after {
     content: '';
     position: absolute;
-    bottom: -10px;
+    bottom: -15px;
     left: 0;
-    width: 60px;
+    width: 80px;
     height: 3px;
     background: linear-gradient(90deg, rgba(125, 174, 255, 0.9), rgba(185, 205, 217, 0.5), transparent);
     border-radius: 2px;
-    box-shadow: 0 0 10px rgba(125, 174, 255, 0.5);
-    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 8px rgba(125, 174, 255, 0.4);
+    animation: pulse 2.5s ease-in-out infinite;
 }
 
 .fins-description {
-    font-weight: 600;
-    font-size: 1.80rem; 
-    letter-spacing: 1.2px;
-    line-height: 1.5;
-    max-width: 28rem;
+    font-weight: 400;
+    /* DEFAULT: Setting to original laptop size (1.6rem) */
+    font-size: 3.6rem;
+    letter-spacing: normal;
+    line-height: 1.6;
+    max-width: 32rem;
     opacity: 0;
     animation: fadeInUp 1s ease-out 0.3s forwards;
 }
 
 .fins-cta-button {
     position: relative;
-    border: 3px solid rgba(125, 174, 255, 0.6);
-    border-radius: 10px;
-    padding: 1rem 2rem; 
+    border: 3px solid rgba(125, 174, 255, 0.4);
+    border-radius: 12px;
+    padding: 1.1rem 2.5rem;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     opacity: 0;
     animation: fadeInUp 1s ease-out 0.6s forwards;
@@ -423,47 +432,65 @@
 
 
 .fins-cta-button:hover {
-    background: rgba(125, 174, 255, 0.15);
-    box-shadow: 0 0 20px rgba(125, 174, 255, 0.7),
-                0 0 40px rgba(125, 174, 255, 0.5),
-                0 0 60px rgba(125, 174, 255, 0.3),
-                inset 0 0 20px rgba(125, 174, 255, 0.1);
-    transform: scale(1.08) translateY(-3px);
-    border-color: rgba(125, 174, 255, 0.8);
-}
-
-.fins-cta-button:hover::before {
-    opacity: 1;
-}
-
-.fins-cta-button:hover::after {
-    opacity: 1;
+    background: rgba(125, 174, 255, 0.08);
+    box-shadow: 0 0 15px rgba(125, 174, 255, 0.5),
+                0 0 30px rgba(125, 174, 255, 0.3),
+                0 0 40px rgba(125, 174, 255, 0.2);
+    transform: scale(1.05) translateY(-2px);
+    border-color: rgba(125, 174, 255, 0.6);
 }
 
 .fins-cta-button:active {
-    transform: scale(1.02);
+    transform: scale(1.01);
 }
 
 .fins-cta-button span {
-    font-weight: 600; 
-    font-size: 1.5rem; 
-    letter-spacing: 1.8px;
+    /* FIXED: Revert to white color */
+    color: #ffffff;
+    font-weight: 800;
+    /* DEFAULT: Setting to original laptop size (2.25rem) */
+    font-size: 2.25rem;
+    letter-spacing: 1.5px;
     position: relative;
     z-index: 1;
     transition: text-shadow 0.3s ease, letter-spacing 0.3s ease;
 }
 
 .fins-cta-button:hover span {
-    text-shadow: 0 0 20px rgba(213, 248, 251, 0.8),
-                 0 0 40px rgba(125, 174, 255, 0.5);
-    letter-spacing: 2.4px;
+    text-shadow: 0 0 10px rgba(42, 180, 195, 0.6),
+                 0 0 20px rgba(42, 180, 195, 0.4);
+    letter-spacing: 2px;
 }
 
 
 
 /* Desktop Fish Image */
 .fins-desktop-fish {
+    /* Keeping display:none for small screens */
     display: none;
+    position: relative; 
+}
+
+/* Bubble Container for Desktop Fish */
+.fins-desktop-fish::after {
+    content: '';
+    position: absolute;
+    bottom: 5%; 
+    left: 10%;
+    width: 80%;
+    height: 100%;
+    /* Apply a series of invisible bubbles with staggered animations */
+    background: 
+        radial-gradient(circle at 10% 90%, rgba(125, 174, 255, 0.4) 10%, transparent 20%) 0 0,
+        radial-gradient(circle at 30% 80%, rgba(125, 174, 255, 0.4) 10%, transparent 20%) 10px 0,
+        radial-gradient(circle at 50% 70%, rgba(125, 174, 255, 0.4) 10%, transparent 20%) 20px 0,
+        radial-gradient(circle at 70% 60%, rgba(125, 174, 255, 0.4) 10%, transparent 20%) 30px 0;
+    background-repeat: repeat-x;
+    background-size: 15px 15px; 
+    animation: bubbles 12s infinite linear;
+    pointer-events: none;
+    z-index: 5;
+    mix-blend-mode: screen; 
 }
 
 /* Bottom Preview Image */
@@ -474,98 +501,82 @@
 
 /* --- 💻 Responsive Design (Media Queries) --- */
 
-/* Medium Screens (md: 768px and up) */
-@media (min-width: 768px) {
+/* Removed Media Query for 768px (Tablet/Small Laptop) */
+
+
+/* Large Screens (lg: 1024px and up) - This size will now apply to your MacBook */
+@media (min-width: 1024px) {
     .fins-header {
-        padding-left: 3rem;
-        padding-right: 3rem;
-    }
-
-    .fins-logo-text h1 {
-        font-size: 3rem;
-    }
-
-    .fins-logo-img {
-        width: 7rem;
-        height: 5rem;
-    }
-
-    .fins-main {
-        padding-left: 3rem;
-        padding-right: 3rem;
+        padding-left: 4rem;
+        padding-right: 4rem;
         padding-top: 2rem; 
     }
 
-    .fins-text-content {
-        row-gap: 2rem;
-    }
-
-    .fins-headline {
-        font-size: 2.25rem;
-    }
-
-    .fins-description {
-        font-size: 1.25rem; 
-    }
-
-    .fins-cta-button span {
-        font-size: 1.875rem;
-    }
-}
-
-
-/* Large Screens (lg: 1024px and up) */
-@media (min-width: 1024px) {
-    .fins-header {
-        padding-left: 3.5rem;
-        padding-right: 3.5rem;
-        padding-top: 1rem; 
-    }
-
     .fins-main {
-        padding-left: 3.5rem;
-        padding-right: 3.5rem;
-        padding-top: 1rem; 
+        padding-left: 4rem;
+        padding-right: 4rem;
+        padding-top: 2rem; 
+        /* ADDED: Use Flexbox to ensure vertical centering of content */
+        display: flex; 
+        flex-direction: column;
     }
 
     .fins-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 3rem;
+        grid-template-columns: 1fr; /* KEY CHANGE: Revert to 1 column */
+        gap: 0;
+        align-items: center;
+        /* KEY CHANGE: Use Flexbox and grow to fill space */
+        display: flex;
+        flex-grow: 1;
+        align-items: center; /* Center content vertically */
+    }
+    
+    .fins-text-content {
+        /* KEY CHANGE: Give text a defined width and z-index to sit on top */
+        width: 50%;
+        max-width: 42rem;
+        z-index: 30;
     }
 
+
     .fins-headline {
-        font-size: 3rem;
+        /* DRASTICALLY SMALLER: 4.5rem -> 2.7rem */
+        font-size: 2.7rem;
     }
 
     .fins-description {
-        font-size: 1.5rem; 
+        /* DRASTICALLY SMALLER: 1.6rem -> 1.0rem */
+        font-size: 1.0rem;
     }
 
     .fins-cta-button span {
-        font-size: 2.25rem;
-    }
-    
-    .fins-mobile-preview {
-        display: none; 
+        /* DRASTICALLY SMALLER: 2.25rem -> 1.4rem */
+        font-size: 1.7rem;
     }
     
     .fins-desktop-fish {
+        /* KEY CHANGE: Absolute positioning to take it out of document flow */
         display: block;
-        width: 100%; 
-        height: 140%; 
-        position: relative;
-        top: -100px;
-        animation: slideInRight 1.2s ease-out;
+        position: absolute; 
+        top: 15%;
+        right: 0;
+        width: 55vw; /* Use viewport width for sizing */
+        height: auto;
+        animation: none; /* Removed animation here */
+        pointer-events: none; /* Allows clicks to pass through to content */
+        /* Center relative to its right alignment and shift up */
+        transform: translateY(-50%); 
+        z-index: 25; /* Between overlay and text */
     }
     
     .fins-desktop-fish::before {
         content: '';
         position: absolute;
-        inset: 0;
+        inset: -10%;
         background: linear-gradient(135deg, 
             transparent 0%, 
-            rgba(125, 174, 255, 0.12) 40%,
-            rgba(185, 205, 217, 0.08) 60%,
+            rgba(125, 174, 255, 0.08) 40%,
+            rgba(185, 205, 217, 0.05) 60%,
             transparent 100%);
         opacity: 0;
         transition: opacity 0.6s ease;
@@ -576,43 +587,38 @@
     }
 
     .fins-desktop-fish img {
-        width: 110%; 
-        height: 100%;
-        object-fit: cover;
-        position: relative;
-        top: 130px;
-        transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), 
-                    filter 0.6s ease;
-        filter: drop-shadow(0 10px 30px rgba(125, 174, 255, 0.3));
+        /* Adjusted positioning based on absolute parent */
+        width:54%; 
+
+        height: auto;
+        object-fit: contain;
+        position: relative; /* Keep relative for movement animations */
+        left: 30%; /* Shift further left within its absolute container */
+        transform: scale(1.25);
+        /* REMOVED: No animation applied here now */
+        pointer-events: auto; /* Allow interaction (hover) on the image itself */
     }
 
+   
+}
 
-    
-    .fins-bottom-preview {
-        display: block; 
-        margin-top: 0.5rem; 
-        width: 100%;
-        max-width: 24rem;
-        animation: fadeInUp 1.4s ease-out;
+/* Extra Large Screens (xl: 1280px and up) - This size will now primarily apply to your 27" monitor */
+@media (min-width: 1280px) {
+    .fins-headline {
+        /* DRASTICALLY SMALLER: 5.5rem -> 3.3rem */
+        font-size: 5.5rem;
     }
 
-    .fins-bottom-preview img {
-        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                    box-shadow 0.5s ease,
-                    filter 0.3s ease;
-        border-radius: 8px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3),
-                    0 0 30px rgba(125, 174, 255, 0.2);
-        border: 2px solid rgba(125, 174, 255, 0.2);
+    .fins-description {
+        /* DRASTICALLY SMALLER: 1.8rem -> 1.2rem */
+        font-size: 2.2rem;
     }
+}
 
-    .fins-bottom-preview img:hover {
-        transform: translateY(-8px) scale(1.03);
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
-                    0 0 50px rgba(125, 174, 255, 0.4);
-        border-color: rgba(125, 174, 255, 0.4);
-        filter: brightness(1.05);
-    }
+/* Global Fix for Scroll Bar */
+html, body {
+    height: 100%;
+    overflow: hidden; /* Prevent body scrollbar */
 }
 
 /* Smooth Scrolling */
@@ -622,32 +628,32 @@ html {
 
 /* Selection Styling */
 ::selection {
-    background: rgba(125, 174, 255, 0.4);
+    background: rgba(125, 174, 255, 0.3);
     color: #fff;
-    text-shadow: 0 0 10px rgba(125, 174, 255, 0.6);
+    text-shadow: 0 0 8px rgba(125, 174, 255, 0.5);
 }
 
 ::-moz-selection {
-    background: rgba(125, 174, 255, 0.4);
+    background: rgba(125, 174, 255, 0.3);
     color: #fff;
-    text-shadow: 0 0 10px rgba(125, 174, 255, 0.6);
+    text-shadow: 0 0 8px rgba(125, 174, 255, 0.5);
 }
 
-/* Scrollbar Styling */
+/* Scrollbar Styling (Only if an element has overflow: auto) */
 ::-webkit-scrollbar {
-    width: 12px;
+    width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(2, 2, 42, 0.5);
+    background: rgba(2, 2, 42, 0.4);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(125, 174, 255, 0.6), rgba(125, 174, 255, 0.4));
-    border-radius: 6px;
-    border: 2px solid rgba(2, 2, 42, 0.5);
+    background: linear-gradient(180deg, rgba(125, 174, 255, 0.5), rgba(125, 174, 255, 0.3));
+    border-radius: 5px;
+    border: 2px solid rgba(2, 2, 42, 0.4);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(125, 174, 255, 0.8), rgba(125, 174, 255, 0.6));
+    background: linear-gradient(180deg, rgba(125, 174, 255, 0.7), rgba(125, 174, 255, 0.5));
 }
