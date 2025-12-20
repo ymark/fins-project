@@ -806,7 +806,7 @@ export default function FishSearch({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Search ID, Scientific Name, Genus, or Common Name"
+                placeholder="Search ID, Scientific Name, Genus"
                 className="search-input centered-search-input"
                 disabled={isLoading}
               />

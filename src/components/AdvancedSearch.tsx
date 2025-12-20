@@ -56,16 +56,15 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
     "vulnerability_fishing",
   ];
 
-  const commonNameTermAttributes = ["language"];
-
   const [terminologies, setTerminologies] = useState<
     Record<string, TerminologyData[]>
   >({});
+
   const [selections, setSelections] = useState<Record<string, string>>(() => {
-    const initialDynamic = [
-      ...allTermAttributes,
-      ...commonNameTermAttributes,
-    ].reduce((acc, attr) => ({ ...acc, [attr]: "" }), {});
+    const initialDynamic = allTermAttributes.reduce(
+      (acc, attr) => ({ ...acc, [attr]: "" }),
+      {}
+    );
     const initialStatic = {
       salt_water_environment: "",
       freshwater_environment: "",
@@ -99,38 +98,6 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
     }
   };
 
-  const fetchCommonNameTerminology = async (type: string) => {
-    try {
-      const url = buildApiUrl(
-        `/terminology_for_common_names?attribute=language`
-      );
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      const termList = data.results || [];
-
-      if (!Array.isArray(termList)) {
-        console.error(
-          `API response for ${type} is not a valid array in 'results'.`
-        );
-        return [];
-      }
-
-      return termList.map((name: string, index: number) => ({
-        id: index + 1,
-        name: name,
-      }));
-    } catch (e) {
-      console.error(`Error fetching common name terminology ${type}:`, e);
-      return [];
-    }
-  };
-
   useEffect(() => {
     const loadTerminologies = async () => {
       setIsTerminologyLoading(true);
@@ -142,35 +109,14 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
           fetchSpeciesTerminology(attr)
         );
 
-        const commonNamePromises = commonNameTermAttributes.map((attr) =>
-          fetchCommonNameTerminology(attr)
-        );
-
-        const results = await Promise.all([
-          ...speciesPromises,
-          ...commonNamePromises,
-        ]);
+        const results = await Promise.all(speciesPromises);
 
         const newTerminologies: Record<string, TerminologyData[]> = {};
-        let totalLoaded = 0;
 
-        results.slice(0, allTermAttributes.length).forEach((result, index) => {
+        results.forEach((result, index) => {
           const attr = allTermAttributes[index];
           newTerminologies[attr] = result;
-          totalLoaded += result.length;
         });
-
-        results.slice(allTermAttributes.length).forEach((result, index) => {
-          const attr = commonNameTermAttributes[index];
-          newTerminologies[attr] = result;
-        });
-
-        // ** DEBUGGING LOGS **
-        console.log("Terminologies loaded successfully:", newTerminologies);
-        const languageCount = newTerminologies["language"]
-          ? newTerminologies["language"].length
-          : 0;
-        console.log(`Language entries found: ${languageCount}`);
 
         setTerminologies(newTerminologies);
 
@@ -234,7 +180,6 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
       salt_water_environment: "Saltwater",
       freshwater_environment: "Freshwater",
       brackish_water_environment: "Brackish Water",
-      language: "Common Name Language",
     };
     return labels[attribute] || attribute.replace(/_/g, " ");
   };
@@ -322,7 +267,6 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
         </IconButton>
       </Box>
 
-      {/* Collapsible Content */}
       <Collapse in={isExpanded}>
         <Box
           component="form"
@@ -335,16 +279,7 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
         >
           {loadingError && (
             <Fade in>
-              <Alert
-                severity="error"
-                sx={{
-                  mb: 2,
-                  borderRadius: 2,
-                  "& .MuiAlert-message": {
-                    fontWeight: 500,
-                  },
-                }}
-              >
+              <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
                 {loadingError}
               </Alert>
             </Fade>
@@ -372,92 +307,7 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
           ) : (
             <Fade in timeout={500}>
               <Grid container spacing={2}>
-                {commonNameTermAttributes.map((attribute) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={attribute}>
-                    <FormControl
-                      fullWidth
-                      size="small"
-                      sx={{
-                        minWidth: "200px",
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: 2,
-                          bgcolor: inputBg,
-                          color: primaryText,
-                          fontSize: "0.875rem",
-                          transition: "all 0.2s",
-                          "&:hover": {
-                            borderColor: accentColor,
-                          },
-                          "&.Mui-focused": {
-                            boxShadow: `0 0 0 2px ${accentColor}30`,
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: accentColor,
-                              borderWidth: 1,
-                            },
-                          },
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "rgba(255, 255, 255, 0.1)",
-                          },
-                        },
-                        "& .MuiSelect-icon": {
-                          color: secondaryText,
-                        },
-                      }}
-                    >
-                      <InputLabel
-                        id={`${attribute}-label`}
-                        sx={{
-                          fontWeight: 500,
-                          fontSize: "0.875rem",
-                          color: secondaryText,
-                          "&.Mui-focused": {
-                            color: accentColor,
-                          },
-                        }}
-                      >
-                        {getFriendlyLabel(attribute)}
-                      </InputLabel>
-                      <Select
-                        labelId={`${attribute}-label`}
-                        id={attribute}
-                        name={attribute}
-                        value={selections[attribute] || ""}
-                        label={getFriendlyLabel(attribute)}
-                        onChange={handleSelectChange}
-                        MenuProps={{
-                          PaperProps: {
-                            sx: {
-                              bgcolor: inputBg,
-                              color: primaryText,
-                              maxHeight: 300,
-                              "& .MuiMenuItem-root": {
-                                fontSize: "0.875rem",
-                                "&:hover": {
-                                  bgcolor: "rgba(42, 180, 195, 0.1)",
-                                },
-                                "&.Mui-selected": {
-                                  bgcolor: "rgba(42, 180, 195, 0.2)",
-                                  "&:hover": {
-                                    bgcolor: "rgba(42, 180, 195, 0.25)",
-                                  },
-                                },
-                              },
-                            },
-                          },
-                        }}
-                      >
-                        <MenuItem value="">-- All --</MenuItem>
-                        {terminologies[attribute]?.map((term) => (
-                          <MenuItem key={term.id} value={term.name}>
-                            {term.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                ))}
-
-                {/* ΥΠΟΛΟΙΠΑ ΦΙΛΤΡΑ (Species Attributes) */}
+                {/* Species Attributes Filters */}
                 {allTermAttributes.map((attribute) => (
                   <Grid item xs={12} sm={6} md={4} lg={3} key={attribute}>
                     <FormControl
@@ -470,36 +320,15 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
                           bgcolor: inputBg,
                           color: primaryText,
                           fontSize: "0.875rem",
-                          transition: "all 0.2s",
-                          "&:hover": {
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
                             borderColor: accentColor,
                           },
-                          "&.Mui-focused": {
-                            boxShadow: `0 0 0 2px ${accentColor}30`,
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: accentColor,
-                              borderWidth: 1,
-                            },
-                          },
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "rgba(255, 255, 255, 0.1)",
-                          },
-                        },
-                        "& .MuiSelect-icon": {
-                          color: secondaryText,
                         },
                       }}
                     >
                       <InputLabel
                         id={`${attribute}-label`}
-                        sx={{
-                          fontWeight: 500,
-                          fontSize: "0.875rem",
-                          color: secondaryText,
-                          "&.Mui-focused": {
-                            color: accentColor,
-                          },
-                        }}
+                        sx={{ color: secondaryText }}
                       >
                         {getFriendlyLabel(attribute)}
                       </InputLabel>
@@ -516,18 +345,6 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
                               bgcolor: inputBg,
                               color: primaryText,
                               maxHeight: 300,
-                              "& .MuiMenuItem-root": {
-                                fontSize: "0.875rem",
-                                "&:hover": {
-                                  bgcolor: "rgba(42, 180, 195, 0.1)",
-                                },
-                                "&.Mui-selected": {
-                                  bgcolor: "rgba(42, 180, 195, 0.2)",
-                                  "&:hover": {
-                                    bgcolor: "rgba(42, 180, 195, 0.25)",
-                                  },
-                                },
-                              },
                             },
                           },
                         }}
@@ -543,6 +360,7 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
                   </Grid>
                 ))}
 
+                {/* Environment Booleans */}
                 {[
                   "salt_water_environment",
                   "freshwater_environment",
@@ -558,37 +376,12 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
                           borderRadius: 2,
                           bgcolor: inputBg,
                           color: primaryText,
-                          fontSize: "0.875rem",
-                          transition: "all 0.2s",
-                          "&:hover": {
-                            borderColor: accentColor,
-                          },
-                          "&.Mui-focused": {
-                            boxShadow: `0 0 0 2px ${accentColor}30`,
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: accentColor,
-                              borderWidth: 1,
-                            },
-                          },
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: "rgba(255, 255, 255, 0.1)",
-                          },
-                        },
-                        "& .MuiSelect-icon": {
-                          color: secondaryText,
                         },
                       }}
                     >
                       <InputLabel
                         id={`${env}-label`}
-                        sx={{
-                          fontWeight: 500,
-                          fontSize: "0.875rem",
-                          color: secondaryText,
-                          "&.Mui-focused": {
-                            color: accentColor,
-                          },
-                        }}
+                        sx={{ color: secondaryText }}
                       >
                         {getFriendlyLabel(env)}
                       </InputLabel>
@@ -599,26 +392,6 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
                         value={selections[env] || ""}
                         label={getFriendlyLabel(env)}
                         onChange={handleSelectChange}
-                        MenuProps={{
-                          PaperProps: {
-                            sx: {
-                              bgcolor: inputBg,
-                              color: primaryText,
-                              "& .MuiMenuItem-root": {
-                                fontSize: "0.875rem",
-                                "&:hover": {
-                                  bgcolor: "rgba(42, 180, 195, 0.1)",
-                                },
-                                "&.Mui-selected": {
-                                  bgcolor: "rgba(42, 180, 195, 0.2)",
-                                  "&:hover": {
-                                    bgcolor: "rgba(42, 180, 195, 0.25)",
-                                  },
-                                },
-                              },
-                            },
-                          },
-                        }}
                       >
                         <MenuItem value="">-- Any --</MenuItem>
                         <MenuItem value="true">Yes</MenuItem>
@@ -632,7 +405,6 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
                   <Button
                     type="submit"
                     variant="contained"
-                    size="medium"
                     fullWidth
                     disabled={isTerminologyLoading}
                     startIcon={<SearchIcon />}
@@ -640,20 +412,9 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
                       py: 1.25,
                       borderRadius: 2,
                       fontWeight: 700,
-                      fontSize: "0.95rem",
                       textTransform: "none",
                       background: `linear-gradient(90deg, ${accentColor} 0%, #10b981 100%)`,
                       color: "white",
-                      boxShadow: `0 4px 10px ${accentColor}40`,
-                      transition: "all 0.3s",
-                      "&:hover": {
-                        background: `linear-gradient(90deg, #10b981 0%, ${accentColor} 100%)`,
-                        boxShadow: `0 6px 14px ${accentColor}60`,
-                        transform: "translateY(-2px)",
-                      },
-                      "&:active": {
-                        transform: "translateY(0)",
-                      },
                     }}
                   >
                     Search Species
