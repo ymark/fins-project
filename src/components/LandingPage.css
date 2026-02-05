@@ -1,659 +1,513 @@
-@keyframes shimmer {
-    0% {
-        background-position: -1000px 0;
+/* === KEYFRAMES & ANIMATIONS === */
+@keyframes fadeInUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(30px); 
     }
-    100% {
-        background-position: 1000px 0;
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
     }
 }
 
-@keyframes glow {
-    /* REMOVED: This animation is no longer used for the header text glow */
-    0%, 100% {
-        text-shadow: 0 0 1px transparent; 
+@keyframes logoFloat {
+    0%, 100% { 
+        transform: translateY(0) rotate(0deg); 
     }
-    50% {
-        text-shadow: 0 0 1px transparent; 
+    25% { 
+        transform: translateY(-5px) rotate(2deg); 
+    }
+    75% { 
+        transform: translateY(-3px) rotate(-2deg); 
     }
 }
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
+
+@keyframes slowZoom {
+    0%, 100% { 
+        transform: scale(1); 
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    50% { 
+        transform: scale(1.08); 
+    }
+}
+
+@keyframes shimmer {
+    0% { 
+        background-position: -200% center; 
+    }
+    100% { 
+        background-position: 200% center; 
     }
 }
 
 @keyframes ripple {
-    0% {
-        box-shadow: 0 0 0 0 rgba(125, 174, 255, 0.7);
+    0% { 
+        box-shadow: 0 0 0 0 rgba(125, 174, 255, 0.4); 
     }
-    100% {
-        box-shadow: 0 0 0 15px rgba(125, 174, 255, 0);
-    }
-}
-
-@keyframes borderGlow {
-    0%, 100% {
-        border-color: rgba(125, 174, 255, 0.2);
-        box-shadow: 0 0 15px rgba(125, 174, 255, 0.15);
-    }
-    50% {
-        border-color: rgba(125, 174, 255, 0.4);
-        box-shadow: 0 0 30px rgba(125, 174, 255, 0.3);
+    100% { 
+        box-shadow: 0 0 0 15px rgba(125, 174, 255, 0); 
     }
 }
 
-@keyframes pulse {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 1;
+@keyframes float {
+    0%, 100% { 
+        transform: translateY(0) translateX(0); 
     }
-    50% {
-        transform: scale(1.03);
-        opacity: 0.95;
+    33% { 
+        transform: translateY(-15px) translateX(10px); 
     }
-}
-
-@keyframes gradientShift {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
+    66% { 
+        transform: translateY(-8px) translateX(-8px); 
     }
 }
 
-
-/* --- NEW: Bubble Animation --- */
-@keyframes bubbles {
-    0% {
-        transform: translateY(0) scale(0);
-        opacity: 0;
-    }
-    20% {
-        transform: translateY(0) scale(0.2);
-        opacity: 0.2;
-    }
-    100% {
-        transform: translateY(-1000px) scale(1.2);
-        opacity: 0;
-    }
-}
-
-/* --- Keyframes (Restored Essential Animations) --- */
-@keyframes slowZoom {
-    /* Used for background image */
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-@keyframes waveMove {
-    /* Used for background wave pattern */
-    0% {
-        background-position: 0% 0%;
-    }
-    100% {
-        background-position: 100% 100%;
-    }
-}
-@keyframes logoWave {
-    /* Used for the logo text */
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-2px);
-    }
-}
-/* --- End of Keyframes --- */
-
-
-/*
- * Base Utility and Custom Styles
- */
-
-/* Enhanced Custom Colors with Advanced Gradients */
-.bg-ocean-overlay { 
-    background: linear-gradient(135deg, rgba(2, 2, 42, 0.3) 0%, rgba(22, 30, 83, 0.25) 50%, rgba(2, 2, 42, 0.3) 100%);
-    backdrop-filter: blur(2px) saturate(1.1);
-}
-
-.border-ocean-border { 
-    border-color: rgba(125, 174, 255, 0.3);
-    border-image: linear-gradient(45deg, rgba(125, 174, 255, 0.3), rgba(185, 205, 217, 0.5), rgba(125, 174, 255, 0.3)) 1;
-    animation: borderGlow 3s ease-in-out infinite;
-}
-
-.text-ocean-headline { 
-    /* FIXED: Revert to white/near-white */
-    color: #ffffff; 
-    /* FIXED: Remove all glow shadows, keep only dark shadows for definition */
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8), 
-                 0 0 5px rgba(0, 0, 0, 0.4);
-    /* REMOVED: glow animation */
-    animation: none;
-}
-
-.text-ocean-text { 
-    /* FIXED: Revert to white/near-white */
-    color: #E0E7FF; /* Off-white for paragraphs */
-    font-weight: 500;
-    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.8),
-                 0 0 8px rgba(0, 0, 0, 0.6);
-}
-
-.bg-ocean-button { 
-    background: linear-gradient(135deg, #1A225F 0%, #222C6F 50%, #1A225F 100%);
-    background-size: 200% 200%;
-    animation: gradientShift 4s ease infinite;
-    position: relative;
+/* === BASE LAYOUT === */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
     overflow: hidden;
+    background-color: #02022a;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.bg-ocean-button::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-        45deg,
-        transparent,
-        rgba(125, 174, 255, 0.1),
-        transparent
-    );
-    transform: rotate(45deg);
-    animation: shimmer 4s infinite;
+* {
+    box-sizing: border-box;
 }
 
-.bg-ocean-button::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at center, rgba(125, 174, 255, 0.05), transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.text-ocean-button-text { 
-    /* FIXED: Revert to white/near-white */
-    color: #ffffff;
-    font-weight: 700; 
-    /* FIXED: Minimal glow for button text */
-    text-shadow: 0 0 5px rgba(42, 180, 195, 0.3);
-}
-
-/* Enhanced Custom Effects */
-.stroke-text {
-    -webkit-text-stroke: 0.5px rgba(125, 174, 255, 0.4);
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3),
-                 0 0 15px rgba(125, 174, 255, 0.2),
-                 0 0 25px rgba(125, 174, 255, 0.1);
-}
-
-.stroke-text-button {
-    -webkit-text-stroke: 0.8px rgba(125, 174, 255, 0.4);
-}
-
-.shadow-button-inset {
-    box-shadow: inset 0 3px 8px 0 rgba(0, 0, 0, 0.3),
-                0 0 15px rgba(125, 174, 255, 0.2),
-                0 0 30px rgba(125, 174, 255, 0.08);
-}
-
-/* --- Base and Layout Container --- */
+/* === CONTAINER === */
 .fins-container {
     position: relative;
-    min-height: 100vh;
+    height: 100vh;
     width: 100%;
-    overflow: hidden; /* Prevent body scroll if content tries to overflow */
+    display: flex;
+    flex-direction: column;
 }
 
+/* === BACKGROUND === */
 .fins-bg-container {
     position: absolute;
     inset: 0;
     z-index: 0;
-}
-
-.fins-bg-container::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 20% 30%, rgba(125, 174, 255, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(185, 205, 217, 0.08) 0%, transparent 50%);
-    animation: waveMove 25s ease-in-out infinite;
-    pointer-events: none;
-    z-index: 1;
-}
-
-.fins-bg-container::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 30% 50%, rgba(125, 174, 255, 0.08) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 2;
+    overflow: hidden;
 }
 
 .fins-bg-container img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    animation: slowZoom 45s infinite ease-in-out;
-    filter: contrast(1.1);
+    animation: slowZoom 50s infinite ease-in-out;
+    filter: brightness(0.9);
 }
 
 .fins-overlay {
     position: absolute;
     inset: 0;
     z-index: 10;
-    border: 1px solid rgba(125, 174, 255, 0.2);
-    box-shadow: 0 3px 20px rgba(0, 0, 0, 0.3),
-                inset 0 0 60px rgba(125, 174, 255, 0.05),
-                inset 0 0 30px rgba(185, 205, 217, 0.03);
-    animation: borderGlow 4s ease-in-out infinite;
+    background: linear-gradient(
+        135deg, 
+        rgba(2, 2, 42, 0.75) 0%, 
+        rgba(22, 30, 83, 0.6) 50%,
+        rgba(2, 2, 42, 0.8) 100%
+    );
+    backdrop-filter: blur(3px);
 }
 
+/* === CONTENT CONTAINER === */
 .fins-content {
-    /* KEY CHANGE: Fixed height to prevent scroll overflow */
     position: relative;
     z-index: 20;
-    min-height: 100vh;
-    height: 100vh; 
-    overflow: hidden; /* Ensure content doesn't create internal scroll, relying on viewport height */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
-/* --- Header/Logo --- */
+/* === HEADER === */
 .fins-header {
-    padding-top: 1.5rem;
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-    animation: fadeInUp 0.8s ease-out;
+    padding: 2rem 4rem;
+    background: linear-gradient(
+        180deg, 
+        rgba(2, 2, 42, 0.6) 0%, 
+        transparent 100%
+    );
 }
 
 .fins-logo-group {
     display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s ease;
+    align-items: center;
+    gap: 1.5rem;
 }
 
-.fins-logo-group:hover {
-    transform: scale(1.02) translateY(-1px);
-
-    filter: drop-shadow(0 5px 15px rgba(125, 174, 255, 0.2));
-}
-
-.fins-logo-text h1 {
-    /* FIXED: Revert to white color */
-    color: white; 
+.small-header {
+    font-size: 3.5rem !important;
     font-weight: 900;
-    /* BASELINE: Resetting to original mobile size */
-    font-size: 2.5rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    line-height: 1;
-    /* FIXED: Minimal text shadow (no glow/radiation) */
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7); 
-    /* FIXED: Removed glow animation, keeping only wave */
-    animation: logoWave 2s ease-in-out infinite 1s; 
-    transition: letter-spacing 0.3s ease;
-}
-
-.fins-logo-text h1:hover {
-    letter-spacing: 3.5px;
-}
-
-.fins-logo-text p {
-    /* FIXED: Revert to white color */
     color: white;
-    font-size: 0.75rem;
-    letter-spacing: 1px;
+    letter-spacing: 4px !important;
+    margin: 0;
     text-transform: uppercase;
-    font-family: Inter, sans-serif;
-    font-weight: 400;
-    margin-top: 0.3rem;
-    opacity: 0.95;
-    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+    text-shadow: 
+        0 0 20px rgba(125, 174, 255, 0.5),
+        0 4px 8px rgba(0, 0, 0, 0.8);
+    animation: logoFloat 4s ease-in-out infinite;
+}
+
+.small-subheader {
+    font-size: 0.8rem !important;
+    color: rgba(160, 195, 232, 0.95);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0;
+    font-weight: 600;
 }
 
 .fins-logo-img {
-    width: 4.5rem;
-    height: 3.5rem;
-    object-fit: contain;
-    margin-top: -1.9rem;
-    margin-left: -8.5rem;
-    animation: float 6s ease-in-out infinite; 
-    filter: drop-shadow(0 0 10px rgba(125, 174, 255, 0.4))
-            drop-shadow(0 0 20px rgba(125, 174, 255, 0.2));
-    transition: filter 0.3s ease;
+    width: 5rem;
+    height: auto;
+    filter: 
+        drop-shadow(0 0 15px rgba(125, 174, 255, 0.4))
+        drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+    animation: logoFloat 4s ease-in-out infinite;
+    animation-delay: 0.2s;
 }
 
-.fins-logo-img:hover {
-    filter: drop-shadow(0 0 15px rgba(125, 174, 255, 0.6))
-            drop-shadow(0 0 30px rgba(125, 174, 255, 0.4));
-}
-
-/* --- Main Content --- */
+/* === MAIN CONTENT === */
 .fins-main {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-    padding-top: 2rem;
-}
-
-.fins-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    align-items: center;
+    flex-grow: 1;
+    padding: 0 4rem 2rem;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 1.5rem;
 }
 
 .fins-text-content {
     display: flex;
     flex-direction: column;
-    row-gap: 1.5rem;
-    max-width: 42rem;
-    animation: slideInLeft 1s ease-out;
+    gap: 1.5rem;
+    max-width: 50rem;
+    animation: fadeInUp 0.8s ease-out;
 }
 
-.fins-headline {
+.small-headline {
+    font-size: 5rem !important;
     font-weight: 900;
-    /* DEFAULT: Setting to original laptop size (4.5rem) */
-    font-size: 4.5rem; 
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
     line-height: 1.1;
-    position: relative;
-    transition: letter-spacing 0.3s ease;
-
-.fins-headline {
-    /* ... other properties ... */
-    background: linear-gradient(135deg, #ffffff 0%, #a0c3e8 50%, #ffffff 100%);
-    background-size: 100% auto;
+    margin: 0;
+    background: linear-gradient(
+        135deg, 
+        #ffffff 0%, 
+        #a0c3e8 50%,
+        #7daeff 100%
+    );
+    background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-}
-}
-
-.fins-headline:hover {
-    letter-spacing: 2px;
+    animation: shimmer 3s linear infinite;
+    text-shadow: 0 4px 12px rgba(125, 174, 255, 0.3);
 }
 
-.fins-headline::after {
+.small-desc {
+    font-size: 1.5rem !important;
+    color: #E8F0FF;
+    max-width: 32rem;
+    line-height: 1.7;
+    margin: 0;
+    font-weight: 400;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* === ACTIONS WRAPPER === */
+.fins-actions-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3rem;
+    margin-top: 1rem;
+}
+
+/* === VIDEO PREVIEW === */
+.tutorial-preview-container-large {
+    position: relative;
+    width: 500px;
+    height: 280px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 3px solid rgba(125, 174, 255, 0.4);
+    box-shadow: 
+        0 20px 50px rgba(0, 0, 0, 0.6),
+        0 0 30px rgba(125, 174, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tutorial-preview-container-large::before {
     content: '';
     position: absolute;
-    bottom: -15px;
-    left: 0;
-    width: 80px;
-    height: 3px;
-    background: linear-gradient(90deg, rgba(125, 174, 255, 0.9), rgba(185, 205, 217, 0.5), transparent);
-    border-radius: 2px;
-    box-shadow: 0 0 8px rgba(125, 174, 255, 0.4);
-    animation: pulse 2.5s ease-in-out infinite;
-}
-
-.fins-description {
-    font-weight: 400;
-    /* DEFAULT: Setting to original laptop size (1.6rem) */
-    font-size: 3.6rem;
-    letter-spacing: normal;
-    line-height: 1.6;
-    max-width: 32rem;
+    inset: 0;
+    background: linear-gradient(
+        135deg, 
+        rgba(125, 174, 255, 0.1) 0%, 
+        transparent 100%
+    );
     opacity: 0;
-    animation: fadeInUp 1s ease-out 0.3s forwards;
+    transition: opacity 0.4s;
+    z-index: 1;
 }
 
+.tutorial-preview-container-large:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: rgba(125, 174, 255, 0.6);
+    box-shadow: 
+        0 25px 60px rgba(0, 0, 0, 0.7),
+        0 0 40px rgba(125, 174, 255, 0.4);
+}
+
+.tutorial-preview-container-large:hover::before {
+    opacity: 1;
+}
+
+.preview-video-element {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s;
+}
+
+.tutorial-preview-container-large:hover .preview-video-element {
+    transform: scale(1.05);
+}
+
+/* === CTA BUTTON === */
 .fins-cta-button {
     position: relative;
-    border: 3px solid rgba(125, 174, 255, 0.4);
-    border-radius: 12px;
-    padding: 1.1rem 2.5rem;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0;
-    animation: fadeInUp 1s ease-out 0.6s forwards;
-    overflow: hidden;
+    border: 3px solid rgba(125, 174, 255, 0.5);
+    border-radius: 14px;
+    padding: 1.3rem 9rem;
+    background: linear-gradient(
+        135deg, 
+        #1A225F 0%, 
+        #222C6F 50%,
+        #2A3680 100%
+    );
     cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    overflow: hidden;
+    box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
+.fins-cta-button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg, 
+        transparent 0%, 
+        rgba(125, 174, 255, 0.2) 50%,
+        transparent 100%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+}
 
 .fins-cta-button:hover {
-    background: rgba(125, 174, 255, 0.08);
-    box-shadow: 0 0 15px rgba(125, 174, 255, 0.5),
-                0 0 30px rgba(125, 174, 255, 0.3),
-                0 0 40px rgba(125, 174, 255, 0.2);
-    transform: scale(1.05) translateY(-2px);
-    border-color: rgba(125, 174, 255, 0.6);
+    transform: translateY(-3px);
+    border-color: rgba(125, 174, 255, 0.8);
+    box-shadow: 
+        0 12px 35px rgba(125, 174, 255, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    animation: ripple 1.5s infinite;
+}
+
+.fins-cta-button:hover::before {
+    transform: translateX(100%);
 }
 
 .fins-cta-button:active {
-    transform: scale(1.01);
+    transform: translateY(-1px);
 }
 
-.fins-cta-button span {
-    /* FIXED: Revert to white color */
-    color: #ffffff;
-    font-weight: 800;
-    /* DEFAULT: Setting to original laptop size (2.25rem) */
-    font-size: 2.25rem;
-    letter-spacing: 1.5px;
+.text-ocean-button-text {
     position: relative;
     z-index: 1;
-    transition: text-shadow 0.3s ease, letter-spacing 0.3s ease;
+    color: white;
+    font-weight: 800;
+    font-size: 1.6rem;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    letter-spacing: 1px;
 }
 
-.fins-cta-button:hover span {
-    text-shadow: 0 0 10px rgba(42, 180, 195, 0.6),
-                 0 0 20px rgba(42, 180, 195, 0.4);
-    letter-spacing: 2px;
-}
-
-
-
-/* Desktop Fish Image */
-.fins-desktop-fish {
-    /* Keeping display:none for small screens */
-    display: none;
-    position: relative; 
-}
-
-/* Bubble Container for Desktop Fish */
-.fins-desktop-fish::after {
-    content: '';
-    position: absolute;
-    bottom: 5%; 
-    left: 10%;
-    width: 80%;
-    height: 100%;
-    /* Apply a series of invisible bubbles with staggered animations */
-    background: 
-        radial-gradient(circle at 10% 90%, rgba(125, 174, 255, 0.4) 10%, transparent 20%) 0 0,
-        radial-gradient(circle at 30% 80%, rgba(125, 174, 255, 0.4) 10%, transparent 20%) 10px 0,
-        radial-gradient(circle at 50% 70%, rgba(125, 174, 255, 0.4) 10%, transparent 20%) 20px 0,
-        radial-gradient(circle at 70% 60%, rgba(125, 174, 255, 0.4) 10%, transparent 20%) 30px 0;
-    background-repeat: repeat-x;
-    background-size: 15px 15px; 
-    animation: bubbles 12s infinite linear;
-    pointer-events: none;
-    z-index: 5;
-    mix-blend-mode: screen; 
-}
-
-/* Bottom Preview Image */
-.fins-bottom-preview {
-    display: none;
-}
-
-
-/* --- 💻 Responsive Design (Media Queries) --- */
-
-/* Removed Media Query for 768px (Tablet/Small Laptop) */
-
-
-/* Large Screens (lg: 1024px and up) - This size will now apply to your MacBook */
+/* === DESKTOP FISH IMAGE === */
 @media (min-width: 1024px) {
-    .fins-header {
-        padding-left: 4rem;
-        padding-right: 4rem;
-        padding-top: 2rem; 
-    }
-
-    .fins-main {
-        padding-left: 4rem;
-        padding-right: 4rem;
-        padding-top: 2rem; 
-        /* ADDED: Use Flexbox to ensure vertical centering of content */
-        display: flex; 
-        flex-direction: column;
-    }
-
-    .fins-grid {
-        grid-template-columns: 1fr; /* KEY CHANGE: Revert to 1 column */
-        gap: 0;
-        align-items: center;
-        /* KEY CHANGE: Use Flexbox and grow to fill space */
-        display: flex;
-        flex-grow: 1;
-        align-items: center; /* Center content vertically */
-    }
-    
-    .fins-text-content {
-        /* KEY CHANGE: Give text a defined width and z-index to sit on top */
-        width: 50%;
-        max-width: 42rem;
-        z-index: 30;
-    }
-
-
-    .fins-headline {
-        /* DRASTICALLY SMALLER: 4.5rem -> 2.7rem */
-        font-size: 2.7rem;
-    }
-
-    .fins-description {
-        /* DRASTICALLY SMALLER: 1.6rem -> 1.0rem */
-        font-size: 1.0rem;
-    }
-
-    .fins-cta-button span {
-        /* DRASTICALLY SMALLER: 2.25rem -> 1.4rem */
-        font-size: 1.7rem;
-    }
-    
     .fins-desktop-fish {
-        /* KEY CHANGE: Absolute positioning to take it out of document flow */
         display: block;
-        position: absolute; 
-        top: 15%;
-        right: 0;
-        width: 55vw; /* Use viewport width for sizing */
-        height: auto;
-        animation: none; /* Removed animation here */
-        pointer-events: none; /* Allows clicks to pass through to content */
-        /* Center relative to its right alignment and shift up */
-        transform: translateY(-50%); 
-        z-index: 25; /* Between overlay and text */
-    }
-    
-    .fins-desktop-fish::before {
-        content: '';
         position: absolute;
-        inset: -10%;
-        background: linear-gradient(135deg, 
-            transparent 0%, 
-            rgba(125, 174, 255, 0.08) 40%,
-            rgba(185, 205, 217, 0.05) 60%,
-            transparent 100%);
-        opacity: 0;
-        transition: opacity 0.6s ease;
-        z-index: 1;
+        top: 14%;
+        right: 3rem;
+        width: 38vw;
+        max-width: 35%;
         pointer-events: none;
-        animation: gradientShift 8s ease infinite;
-        background-size: 200% 200%;
+        z-index: 15;
+        animation: float 6s ease-in-out infinite;
     }
 
     .fins-desktop-fish img {
-        /* Adjusted positioning based on absolute parent */
-        width:54%; 
-
+        width: 100%;
         height: auto;
         object-fit: contain;
-        position: relative; /* Keep relative for movement animations */
-        left: 30%; /* Shift further left within its absolute container */
-        transform: scale(1.25);
-        /* REMOVED: No animation applied here now */
-        pointer-events: auto; /* Allow interaction (hover) on the image itself */
-    }
-
-   
-}
-
-/* Extra Large Screens (xl: 1280px and up) - This size will now primarily apply to your 27" monitor */
-@media (min-width: 1280px) {
-    .fins-headline {
-        /* DRASTICALLY SMALLER: 5.5rem -> 3.3rem */
-        font-size: 5.5rem;
-    }
-
-    .fins-description {
-        /* DRASTICALLY SMALLER: 1.8rem -> 1.2rem */
-        font-size: 2.2rem;
+        transform: scale(1.15);
+        filter: 
+            drop-shadow(0 0 30px rgba(125, 174, 255, 0.3))
+            drop-shadow(0 10px 40px rgba(0, 0, 0, 0.5));
     }
 }
 
-/* Global Fix for Scroll Bar */
-html, body {
-    height: 100%;
-    overflow: hidden; /* Prevent body scrollbar */
+/* === VIDEO MODAL === */
+.video-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(10px);
+    animation: fadeInUp 0.3s ease-out;
 }
 
-/* Smooth Scrolling */
-html {
-    scroll-behavior: smooth;
+.video-modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 1000px;
+    border: 2px solid rgba(125, 174, 255, 0.5);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 
+        0 30px 80px rgba(0, 0, 0, 0.8),
+        0 0 50px rgba(125, 174, 255, 0.3);
 }
 
-/* Selection Styling */
-::selection {
-    background: rgba(125, 174, 255, 0.3);
-    color: #fff;
-    text-shadow: 0 0 8px rgba(125, 174, 255, 0.5);
+.full-video-element {
+    width: 100%;
+    border-radius: 14px;
+    display: block;
 }
 
-::-moz-selection {
-    background: rgba(125, 174, 255, 0.3);
-    color: #fff;
-    text-shadow: 0 0 8px rgba(125, 174, 255, 0.5);
+.close-video {
+    position: absolute;
+    top: -60px;
+    right: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
 }
 
-/* Scrollbar Styling (Only if an element has overflow: auto) */
-::-webkit-scrollbar {
-    width: 10px;
+.close-video:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(125, 174, 255, 0.8);
+    transform: rotate(90deg) scale(1.1);
 }
 
-::-webkit-scrollbar-track {
-    background: rgba(2, 2, 42, 0.4);
+/* === RESPONSIVE === */
+@media (max-width: 1280px) {
+    .small-headline {
+        font-size: 3.2rem !important;
+    }
+    
+    .tutorial-preview-container-large {
+        width: 450px;
+        height: 250px;
+    }
+    
+    .fins-cta-button {
+        padding: 1.2rem 7rem;
+    }
 }
 
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(125, 174, 255, 0.5), rgba(125, 174, 255, 0.3));
-    border-radius: 5px;
-    border: 2px solid rgba(2, 2, 42, 0.4);
+@media (max-width: 1024px) {
+    .fins-header {
+        padding: 1.5rem 2rem;
+    }
+    
+    .fins-main {
+        padding: 0 2rem 2rem;
+    }
+    
+    .small-header {
+        font-size: 2.8rem !important;
+    }
+    
+    .small-headline {
+        font-size: 2.6rem !important;
+    }
+    
+    .tutorial-preview-container-large {
+        width: 400px;
+        height: 225px;
+    }
+    
+    .fins-cta-button {
+        padding: 1.1rem 5rem;
+    }
+    
+    .text-ocean-button-text {
+        font-size: 1.4rem;
+    }
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(125, 174, 255, 0.7), rgba(125, 174, 255, 0.5));
+@media (max-width: 768px) {
+    .fins-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .fins-main {
+        padding: 0 1.5rem 1.5rem;
+    }
+    
+    .small-header {
+        font-size: 2.2rem !important;
+        letter-spacing: 2px !important;
+    }
+    
+    .small-subheader {
+        font-size: 0.7rem !important;
+    }
+    
+    .fins-logo-img {
+        width: 3.5rem;
+    }
+    
+    .small-headline {
+        font-size: 2rem !important;
+    }
+    
+    .small-desc {
+        font-size: 1rem !important;
+    }
+    
+    .tutorial-preview-container-large {
+        width: 100%;
+        max-width: 350px;
+        height: 200px;
+    }
+    
+    .fins-cta-button {
+        padding: 1rem 4rem;
+    }
+    
+    .text-ocean-button-text {
+        font-size: 1.2rem;
+    }
 }

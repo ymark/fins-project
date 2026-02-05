@@ -121,7 +121,7 @@ export default function FishSearch({
   const [randomFishList, setRandomFishList] = useState<RandomFishSummary[]>([]);
   const [isRandomLoading, setIsRandomLoading] = useState(true);
   const [searchResultsList, setSearchResultsList] = useState<SpeciesSummary[]>(
-    []
+    [],
   );
 
   const capitalizeFirstLetter = (string: string): string => {
@@ -166,13 +166,13 @@ export default function FishSearch({
 
   const fetchSpeciesDetails = async (
     speciesCode: number,
-    commonName: string = "N/A"
+    commonName: string = "N/A",
   ) => {
     const detailsResponse = await fetch(buildApiUrl(`/species/${speciesCode}`));
 
     if (!detailsResponse.ok) {
       throw new Error(
-        `Αποτυχία λήψης στοιχείων είδους για ID ${speciesCode}. Status: ${detailsResponse.status}`
+        `Αποτυχία λήψης στοιχείων είδους για ID ${speciesCode}. Status: ${detailsResponse.status}`,
       );
     }
 
@@ -186,7 +186,7 @@ export default function FishSearch({
       fetchAndParse(genusCode ? buildApiUrl(`/genus/${genusCode}`) : null),
       fetchAndParse(familyCode ? buildApiUrl(`/family/${familyCode}`) : null),
       fetchAndParse(
-        buildApiUrl(`/get_common_names_for?species_code=${speciesCode}`)
+        buildApiUrl(`/get_common_names_for?species_code=${speciesCode}`),
       ),
     ]);
 
@@ -322,21 +322,20 @@ export default function FishSearch({
             .catch((e) => {
               console.error(`Error fetching name for ID ${id}:`, e);
               return null;
-            })
+            }),
         );
 
-        const rawResults: (SpeciesSummary | null)[] = await Promise.all(
-          nameFetchPromises
-        );
+        const rawResults: (SpeciesSummary | null)[] =
+          await Promise.all(nameFetchPromises);
         const validResults: SpeciesSummary[] = rawResults.filter(
-          (r) => r !== null
+          (r) => r !== null,
         ) as SpeciesSummary[];
 
         if (validResults.length > 0) {
           setSearchResultsList(validResults);
         } else {
           setError(
-            "Η αναζήτηση βρήκε IDs, αλλά απέτυχε να φορτώσει τις λεπτομέρειες των ειδών."
+            "Η αναζήτηση βρήκε IDs, αλλά απέτυχε να φορτώσει τις λεπτομέρειες των ειδών.",
           );
         }
       }
@@ -370,7 +369,7 @@ export default function FishSearch({
       let searchData = null;
 
       let searchUrl = buildApiUrl(
-        `/search_common_names?common_name=${encodeURIComponent(query)}`
+        `/search_common_names?common_name=${encodeURIComponent(query)}`,
       );
       let searchResponse = await fetch(searchUrl);
       searchData = searchResponse.ok ? await searchResponse.json() : null;
@@ -382,8 +381,8 @@ export default function FishSearch({
       if (resultsArray.length === 0) {
         searchUrl = buildApiUrl(
           `/search_common_names?common_name=${encodeURIComponent(
-            capitalizedQuery
-          )}`
+            capitalizedQuery,
+          )}`,
         );
         searchResponse = await fetch(searchUrl);
         searchData = searchResponse.ok ? await searchResponse.json() : null;
@@ -401,8 +400,8 @@ export default function FishSearch({
         // --- Search by Scientific Name ---
         searchUrl = buildApiUrl(
           `/search_species?scientific_name=${encodeURIComponent(
-            capitalizedQuery
-          )}`
+            capitalizedQuery,
+          )}`,
         );
         searchResponse = await fetch(searchUrl);
         searchData = searchResponse.ok ? await searchResponse.json() : null;
@@ -414,7 +413,7 @@ export default function FishSearch({
         if (resultsArray.length === 0) {
           // --- Search by Genus Name ---
           searchUrl = buildApiUrl(
-            `/search_species?genus=${encodeURIComponent(capitalizedQuery)}`
+            `/search_species?genus=${encodeURIComponent(capitalizedQuery)}`,
           );
           searchResponse = await fetch(searchUrl);
           searchData = searchResponse.ok ? await searchResponse.json() : null;
@@ -450,19 +449,18 @@ export default function FishSearch({
             .catch((e) => {
               console.error(`Error processing ID ${id}:`, e.message);
               return null;
-            })
+            }),
         );
 
-        const rawResults: (SpeciesSummary | null)[] = await Promise.all(
-          nameFetchPromises
-        );
+        const rawResults: (SpeciesSummary | null)[] =
+          await Promise.all(nameFetchPromises);
         const validResults: SpeciesSummary[] = rawResults.filter(
-          (r) => r !== null
+          (r) => r !== null,
         ) as SpeciesSummary[];
 
         if (validResults.length === 0) {
           setError(
-            `Η αναζήτηση βρήκε ακατάλληλα δεδομένα, δοκιμάστε πιο συγκεκριμένη αναζήτηση.`
+            `Η αναζήτηση βρήκε ακατάλληλα δεδομένα, δοκιμάστε πιο συγκεκριμένη αναζήτηση.`,
           );
           setIsLoading(false);
           return;
@@ -476,11 +474,11 @@ export default function FishSearch({
       if (speciesCodeToFetch > 0) {
         await fetchSpeciesDetails(
           speciesCodeToFetch,
-          isIdSearch ? "N/A" : query
+          isIdSearch ? "N/A" : query,
         );
       } else {
         setError(
-          `Δεν βρέθηκε είδος με το ID ή την ονομασία/γένος: "${query}".`
+          `Δεν βρέθηκε είδος με το ID ή την ονομασία/γένος: "${query}".`,
         );
       }
     } catch (err) {
@@ -531,17 +529,17 @@ export default function FishSearch({
         const familyData = await fetchAndParse(
           data.family?.family_code
             ? buildApiUrl(`/family/${data.family.family_code}`)
-            : null
+            : null,
         );
         const classData = await fetchAndParse(
           familyData.class?.class_code
             ? buildApiUrl(`/class/${familyData.class.class_code}`)
-            : null
+            : null,
         );
         const orderData = await fetchAndParse(
           familyData.order?.order_code
             ? buildApiUrl(`/order/${familyData.order.order_code}`)
-            : null
+            : null,
         );
 
         const commonName =
@@ -574,7 +572,7 @@ export default function FishSearch({
     });
 
     const results = (await Promise.all(fetchPromises)).filter(
-      (r): r is RandomFishSummary => r !== null
+      (r): r is RandomFishSummary => r !== null,
     ) as RandomFishSummary[];
     setRandomFishList(results);
     setIsRandomLoading(false);
@@ -636,7 +634,7 @@ export default function FishSearch({
         <div className="fins-logo-group">
           <div className="fins-title-container">
             <h1 className="fins-title">FINS</h1>
-            <p className="fins-subtitle">Fish Index Search Engine</p>
+            <p className="fins-subtitle">Fish INformation System</p>
           </div>
 
           <img
@@ -949,7 +947,7 @@ export default function FishSearch({
                       >
                         {randomFishList.map((fish, index) => {
                           const currentStatus = fish.class.includes(
-                            "Osteichthyes"
+                            "Osteichthyes",
                           )
                             ? "Stable"
                             : "Vulnerable";
@@ -1002,7 +1000,7 @@ export default function FishSearch({
                                       setIsLoading(true);
                                       fetchSpeciesDetails(
                                         fish.id,
-                                        fish.common_name
+                                        fish.common_name,
                                       );
                                     }}
                                   />
@@ -1051,7 +1049,7 @@ export default function FishSearch({
                               setIsLoading(true);
                               fetchSpeciesDetails(
                                 result.id,
-                                result.common_name
+                                result.common_name,
                               );
                             }}
                             sx={{

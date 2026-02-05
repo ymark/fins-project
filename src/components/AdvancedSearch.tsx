@@ -63,7 +63,7 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
   const [selections, setSelections] = useState<Record<string, string>>(() => {
     const initialDynamic = allTermAttributes.reduce(
       (acc, attr) => ({ ...acc, [attr]: "" }),
-      {}
+      {},
     );
     const initialStatic = {
       salt_water_environment: "",
@@ -106,7 +106,7 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
 
       try {
         const speciesPromises = allTermAttributes.map((attr) =>
-          fetchSpeciesTerminology(attr)
+          fetchSpeciesTerminology(attr),
         );
 
         const results = await Promise.all(speciesPromises);
@@ -126,7 +126,7 @@ const AdvancedSearchForm: React.FC<AdvancedSearchProps> = ({
             newTerminologies.body_shape.length === 0
           ) {
             setLoadingError(
-              "⚠️ Failed to load core filter options. Please try again."
+              "⚠️ Failed to load core filter options. Please try again.",
             );
           }
         }

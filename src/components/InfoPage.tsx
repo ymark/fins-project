@@ -136,20 +136,23 @@ const CommonNamesTable: React.FC<{ names: CommonNameItem[] }> = ({ names }) => {
   }
 
   // Group names by language
-  const groupedNames = names.reduce((acc, item) => {
-    const lang = item.language || "Άγνωστη Γλώσσα";
-    if (!acc[lang]) {
-      acc[lang] = [];
-    }
-    acc[lang].push(item.common_name);
-    return acc;
-  }, {} as Record<string, string[]>);
+  const groupedNames = names.reduce(
+    (acc, item) => {
+      const lang = item.language || "Άγνωστη Γλώσσα";
+      if (!acc[lang]) {
+        acc[lang] = [];
+      }
+      acc[lang].push(item.common_name);
+      return acc;
+    },
+    {} as Record<string, string[]>,
+  );
 
   const displayData = Object.entries(groupedNames).map(
     ([language, commonNames]) => ({
       language,
       names: commonNames.join("; "),
-    })
+    }),
   );
 
   return (
@@ -648,7 +651,7 @@ export default function InfoPage({
         <div className="fins-logo-group">
           <div className="fins-title-container">
             <h1 className="fins-title">FINS</h1>
-            <p className="fins-subtitle">Fish index Search Engine</p>
+            <p className="fins-subtitle">Fish INformation System</p>
           </div>
           {/* FINS Logo Image */}
           <img

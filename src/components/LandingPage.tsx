@@ -1,32 +1,24 @@
-import { motion } from "framer-motion"; // 1. Import motion
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import "./LandingPage.css";
 import backgroundImage from "../assets/dark.jpg";
 import desktopFish from "../assets/Group 1.png";
 import logoImage from "../assets/logo.png";
+import tutorialVideo from "../assets/FINS-tutorial2.mp4";
 
 interface LandingPageProps {
   onCtaClick: () => void;
 }
 
-// 2. Define Animation Variants
+// Animation Variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      // Stagger the children's animation
       staggerChildren: 0.15,
       delayChildren: 0.3,
     },
-  },
-};
-
-const logoVariants = {
-  hidden: { y: -50, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 100, damping: 10 },
   },
 };
 
@@ -39,22 +31,14 @@ const textItemVariants = {
   },
 };
 
-const fishVariants = {
-  hidden: { x: 50, opacity: 0 },
-  visible: {
-    x: 0,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 80, damping: 15, delay: 0.5 },
-  },
-};
-
 export default function LandingPage({ onCtaClick }: LandingPageProps) {
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
+
   return (
-    // We use motion.div for the main content block for entrance animation
     <div className="fins-container">
-      {/* Background Image - Keep CSS animation for subtle, continuous effect */}
+      {/* Background Image */}
       <div className="fins-bg-container">
-        <img src={backgroundImage} alt="Ocean background" className="" />
+        <img src={backgroundImage} alt="Ocean background" />
       </div>
 
       {/* Overlay */}
@@ -63,94 +47,121 @@ export default function LandingPage({ onCtaClick }: LandingPageProps) {
       {/* Content Container */}
       <div className="fins-content">
         {/* Header / Logo */}
-        <motion.header
-          className="fins-header"
-          variants={logoVariants} // Apply logo animation variant
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Add a hover effect for visual feedback */}
+        <header className="fins-header">
           <motion.div
             className="fins-logo-group"
-            whileHover={{
-              scale: 1.05,
-              filter: "drop-shadow(0 5px 18px rgba(125, 174, 255, 0.4))",
-            }}
-            transition={{ type: "spring", stiffness: 300 }}
+            whileHover={{ scale: 1.02 }}
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
           >
             <div className="fins-logo-text">
-              <h1 className="text-white">FINS</h1>
-              <p className="text-white">Fish index Search Engine</p>{" "}
+              <h1 className="text-white small-header">FINS</h1>
+              <p className="text-white small-subheader">
+                Fish INformation System
+              </p>
             </div>
             <img src={logoImage} alt="Fish logo" className="fins-logo-img" />
           </motion.div>
-        </motion.header>
+        </header>
 
         {/* Main Content */}
         <motion.main
           className="fins-main"
-          variants={containerVariants} // Container variant to orchestrate children
+          variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
           <div className="fins-grid">
             {/* Left Column - Text Content */}
             <div className="fins-text-content">
-              {/* Main Headline */}
               <motion.h2
-                className="fins-headline text-ocean-headline"
-                variants={textItemVariants} // Apply item animation variant
+                className="fins-headline text-ocean-headline small-headline"
+                variants={textItemVariants}
               >
-                Discover <br /> the
-                <br />
-                Ocean's Beauty
+                Discover <br /> the Ocean's Beauty
               </motion.h2>
 
-              {/* Description */}
               <motion.p
-                className="fins-description text-ocean-text"
-                variants={textItemVariants} // Apply item animation variant
+                className="fins-description text-ocean-text small-desc"
+                variants={textItemVariants}
               >
                 Explore thousands of fish species with our comprehensive
                 database. Search by name, habitat, or characteristics.
               </motion.p>
 
-              {/* CTA Button - Use whileHover/whileTap for interactive feel */}
-              <motion.button
-                className="fins-cta-button bg-ocean-button shadow-button-inset"
-                onClick={onCtaClick}
-                variants={textItemVariants} // Apply item animation variant
-                whileHover={{
-                  scale: 1.05,
-                  boxShadow:
-                    "0 0 25px rgba(125, 174, 255, 0.6), 0 0 50px rgba(125, 174, 255, 0.4)",
-                }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 300, damping: 10 }}
-              >
-                <span className="text-ocean-button-text ">Try diving in</span>
-              </motion.button>
+              {/* Actions Wrapper: Button & Large Video Preview */}
+              <div className="fins-actions-wrapper">
+                <motion.button
+                  className="fins-cta-button bg-ocean-button shadow-button-inset"
+                  onClick={onCtaClick}
+                  variants={textItemVariants}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className="text-ocean-button-text">Try diving in</span>
+                </motion.button>
+
+                {/* Larger Autoplay Video Container */}
+                <motion.div
+                  className="tutorial-preview-container-large"
+                  variants={textItemVariants}
+                  onClick={() => setIsVideoOpen(true)}
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <video
+                    muted
+                    loop
+                    autoPlay
+                    playsInline
+                    className="preview-video-element"
+                  >
+                    <source src={tutorialVideo} type="video/quicktime" />
+                    <source src={tutorialVideo} type="video/mp4" />
+                  </video>
+                  <div className="video-hover-hint">Click to enlarge</div>
+                </motion.div>
+              </div>
             </div>
 
-            {/* Right Column - Fish Image (Desktop) */}
-            <motion.div
-              className="fins-desktop-fish"
-              variants={fishVariants} // Apply fish animation variant
-              initial="hidden"
-              animate="visible"
-              // The continuous float animation is kept in CSS for performance
-            >
-              <motion.img
-                src={desktopFish}
-                alt="Colorful betta fish"
-                className=""
-              />
-            </motion.div>
+            {/* Right Column - Fish Image */}
+            <div className="fins-desktop-fish">
+              <img src={desktopFish} alt="Fish" />
+            </div>
           </div>
-
-          {/* Bottom Preview Image (REMOVED) */}
         </motion.main>
       </div>
+
+      {/* Video Modal */}
+      <AnimatePresence>
+        {isVideoOpen && (
+          <motion.div
+            className="video-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsVideoOpen(false)}
+          >
+            <motion.div
+              className="video-modal-content"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="close-video"
+                onClick={() => setIsVideoOpen(false)}
+              >
+                &times;
+              </button>
+              <video controls autoPlay className="full-video-element">
+                <source src={tutorialVideo} type="video/quicktime" />
+                <source src={tutorialVideo} type="video/mp4" />
+              </video>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
