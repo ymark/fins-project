@@ -4,7 +4,6 @@ import AdvancedSearchForm from "./AdvancedSearch";
 import FishResultCard from "./FishResultCard";
 import {
   Box,
-  Container,
   Typography,
   CircularProgress,
   Alert,
@@ -113,6 +112,13 @@ interface RandomFishSummary {
 
 const LIMIT_RESULTS = 10;
 
+// Helper function to extract ID from object or number
+const extractId = (value: any): number => {
+  if (typeof value === "number") return value;
+  if (value && typeof value === "object" && "id" in value) return value.id;
+  return 0;
+};
+
 export default function FishSearch({
   onFishFound,
 }: {
@@ -167,57 +173,98 @@ export default function FishSearch({
     return {};
   };
 
+  // Helper function to get best common name from list
+  const getBestCommonName = (
+    commonNamesData: any,
+    fallback: string = "N/A",
+  ): string => {
+    if (
+      !commonNamesData ||
+      !commonNamesData.common_names ||
+      commonNamesData.common_names.length === 0
+    ) {
+      return fallback;
+    }
+
+    const names = commonNamesData.common_names;
+
+    // Prefer English
+    const englishName = names.find(
+      (n: any) => n.language?.toLowerCase() === "english",
+    );
+    if (englishName?.common_name) return englishName.common_name;
+
+    // Then Greek
+    const greekName = names.find(
+      (n: any) => n.language?.toLowerCase() === "greek",
+    );
+    if (greekName?.common_name) return greekName.common_name;
+
+    // Otherwise first available name
+    if (names[0]?.common_name) return names[0].common_name;
+
+    return fallback;
+  };
+
   const fetchSpeciesDetails = async (
-    speciesCode: number,
+    speciesCode: number | any,
     commonName: string = "N/A",
   ) => {
-    const detailsResponse = await fetch(buildApiUrl(`/species/${speciesCode}`));
+    // Extract ID from object or number FIRST
+    const actualSpeciesCode = extractId(speciesCode);
+
+    const detailsResponse = await fetch(
+      buildApiUrl(`/species/${actualSpeciesCode}`),
+    );
 
     if (!detailsResponse.ok) {
       throw new Error(
-        `Αποτυχία λήψης στοιχείων είδους για ID ${speciesCode}. Status: ${detailsResponse.status}`,
+        `Αποτυχία λήψης στοιχείων είδους για ID ${actualSpeciesCode}. Status: ${detailsResponse.status}`,
       );
     }
 
     const data = await detailsResponse.json();
     const dims = data.dimensions || [];
 
-    const genusCode = data.genus?.genus_code;
-    const familyCode = data.family?.family_code;
+    const genusCode = extractId(data.genus?.genus_code);
+    const familyCode = extractId(data.family?.family_code);
 
     const [genusData, familyData, commonNamesDataRaw] = await Promise.all([
       fetchAndParse(genusCode ? buildApiUrl(`/genus/${genusCode}`) : null),
       fetchAndParse(familyCode ? buildApiUrl(`/family/${familyCode}`) : null),
       fetchAndParse(
-        buildApiUrl(`/get_common_names_for?species_code=${speciesCode}`),
+        buildApiUrl(`/get_common_names_for?species_code=${actualSpeciesCode}`),
       ),
     ]);
 
-    const orderCode = familyData.order?.order_code;
-    const classCode = familyData.class?.class_code;
+    const orderCode = extractId(familyData.order?.order_code);
+    const classCode = extractId(familyData.class?.class_code);
 
     const [orderData, classData] = await Promise.all([
       fetchAndParse(orderCode ? buildApiUrl(`/order/${orderCode}`) : null),
       fetchAndParse(classCode ? buildApiUrl(`/class/${classCode}`) : null),
     ]);
 
-    const photoUrl = `https://www.fishbase.de/images/species/${data.species_code}.gif`;
+    const photoUrl = `https://www.fishbase.de/images/species/${extractId(data.species_code) || actualSpeciesCode}.gif`;
+
+    const extractedCommonName = getBestCommonName(
+      commonNamesDataRaw,
+      commonName,
+    );
 
     const fishInfo: FishData = {
-      id: data.id || speciesCode,
-      species_code: speciesCode,
+      id: extractId(data.id) || actualSpeciesCode,
+      species_code: actualSpeciesCode,
       scientific_name: data.scientific_name || "N/A",
-      common_name:
-        data.vernacular_name || data.common_name || commonName || "N/A",
-      vernacular_name:
-        data.vernacular_name || data.common_name || commonName || "N/A",
+      common_name: extractedCommonName,
+      vernacular_name: extractedCommonName,
       scientific_author: data.scientific_name_assignment
         ? `${data.scientific_name_assignment.assigned_by} (${data.scientific_name_assignment.at_year})`
         : "N/A",
       genus: data.genus?.genus_name || "N/A",
-      genus_code: data.genus?.genus_code || 0,
+      genus_code: extractId(data.genus?.genus_code) || 0,
       family: data.family?.family_name || "N/A",
-      family_code: data.family?.family_code || 0,
+      family_code: extractId(data.family?.family_code) || 0,
       subfamily: data.subfamily || "N/A",
       taxonomic_issue: data.taxonomic_issue?.issue || "None",
       taxonomic_remarks: data.taxonomic_issue?.remarks || "N/A",
@@ -312,21 +359,31 @@ export default function FishSearch({
       }
 
       if (resultsArray.length === 1) {
-        await fetchSpeciesDetails(resultsArray[0], "N/A");
+        await fetchSpeciesDetails(extractId(resultsArray[0]), "N/A");
       } else {
-        const nameFetchPromises = resultsArray.map((id: number) =>
-          fetch(buildApiUrl(`/species/${id}`))
-            .then((res) => res.json())
-            .then((data) => ({
-              id: id,
+        const nameFetchPromises = resultsArray.map(async (id: number) => {
+          try {
+            const actualId = extractId(id);
+            const res = await fetch(buildApiUrl(`/species/${actualId}`));
+            const data = await res.json();
+
+            // Fetch common names for this species
+            const commonNamesData = await fetchAndParse(
+              buildApiUrl(`/get_common_names_for?species_code=${actualId}`),
+            );
+
+            const commonName = getBestCommonName(commonNamesData, "N/A");
+
+            return {
+              id: actualId,
               scientific_name: data.scientific_name || "N/A",
-              common_name: data.common_name || data.vernacular_name || "N/A",
-            }))
-            .catch((e) => {
-              console.error(`Error fetching name for ID ${id}:`, e);
-              return null;
-            }),
-        );
+              common_name: commonName,
+            };
+          } catch (e) {
+            console.error(`Error fetching name for ID ${id}:`, e);
+            return null;
+          }
+        });
 
         const rawResults: (SpeciesSummary | null)[] =
           await Promise.all(nameFetchPromises);
@@ -432,28 +489,36 @@ export default function FishSearch({
       }
 
       if (resultsArray.length === 1) {
-        speciesCodeToFetch = resultsArray[0];
+        speciesCodeToFetch = extractId(resultsArray[0]);
       }
 
       if (resultsArray.length > 1) {
-        const nameFetchPromises = resultsArray.map((id: number) =>
-          fetch(buildApiUrl(`/species/${id}`))
-            .then((res) => {
-              if (!res.ok) {
-                throw new Error(`Invalid ID: ${id}. Status: ${res.status}`);
-              }
-              return res.json();
-            })
-            .then((data) => ({
-              id: id,
+        const nameFetchPromises = resultsArray.map(async (id: number) => {
+          try {
+            const actualId = extractId(id);
+            const res = await fetch(buildApiUrl(`/species/${actualId}`));
+            if (!res.ok) {
+              throw new Error(`Invalid ID: ${actualId}. Status: ${res.status}`);
+            }
+            const data = await res.json();
+
+            // Fetch common names for this species
+            const commonNamesData = await fetchAndParse(
+              buildApiUrl(`/get_common_names_for?species_code=${actualId}`),
+            );
+
+            const commonName = getBestCommonName(commonNamesData, "N/A");
+
+            return {
+              id: actualId,
               scientific_name: data.scientific_name || "N/A",
-              common_name: data.common_name || data.vernacular_name || "N/A",
-            }))
-            .catch((e) => {
-              console.error(`Error processing ID ${id}:`, e.message);
-              return null;
-            }),
-        );
+              common_name: commonName,
+            };
+          } catch (e) {
+            console.error(`Error processing ID ${id}:`, (e as Error).message);
+            return null;
+          }
+        });
 
         const rawResults: (SpeciesSummary | null)[] =
           await Promise.all(nameFetchPromises);
@@ -545,10 +610,14 @@ export default function FishSearch({
             : null,
         );
 
-        const commonName =
-          data.common_name || data.vernacular_name || item.placeholder;
+        // Fetch common names
+        const commonNamesData = await fetchAndParse(
+          buildApiUrl(`/get_common_names_for?species_code=${item.id}`),
+        );
 
-        const photoUrl = `https://www.fishbase.de/images/species/${data.species_code}.gif`;
+        const commonName = getBestCommonName(commonNamesData, item.placeholder);
+
+        const photoUrl = `https://www.fishbase.de/images/species/${extractId(data.species_code) || item.id}.gif`;
 
         const primaryDescription = data.comments || data.description;
 
@@ -584,43 +653,6 @@ export default function FishSearch({
   useEffect(() => {
     fetchRandomFishData();
   }, []);
-
-  const FeaturedFishCard = ({ fish }: { fish: RandomFishSummary }) => (
-    <div
-      onClick={() => {
-        setIsLoading(true);
-        fetchSpeciesDetails(fish.id, fish.common_name);
-      }}
-      style={{ cursor: "pointer" }}
-    >
-      <FishResultCard
-        commonName={fish.common_name}
-        scientificName={fish.scientific_name}
-        typeLabel={fish.common_name.split(" ")[0] || fish.family}
-        taxonomy={{
-          class: fish.class,
-          order: fish.order,
-          family: fish.family,
-        }}
-        habitatInfo={{
-          maxDepth: fish.max_depth,
-          environment: fish.environment,
-        }}
-        imageUrl={fish.photo_url}
-        statusLabel={
-          fish.class.includes("Osteichthyes") ? "Stable" : "Vulnerable"
-        }
-        rarityLabel={fish.family.includes("idae") ? "Common" : "Rare"}
-        population={fish.order || "N/A"}
-        region={fish.environment || "N/A"}
-        description={fish.description}
-        onClick={() => {
-          setIsLoading(true);
-          fetchSpeciesDetails(fish.id, fish.common_name);
-        }}
-      />
-    </div>
-  );
 
   const handleGoBackToSearch = () => {
     setError(null);
@@ -963,7 +995,7 @@ export default function FishSearch({
 
                           return (
                             <Grid
-                              key={`${fish.id}-${index}`}
+                              key={`${extractId(fish.id)}-${index}`}
                               size={{ xs: 12, sm: 6, md: 3, lg: 3, xl: 3 }}
                               sx={{
                                 display: "flex",
@@ -997,7 +1029,7 @@ export default function FishSearch({
                                     onClick={() => {
                                       setIsLoading(true);
                                       fetchSpeciesDetails(
-                                        fish.id,
+                                        extractId(fish.id),
                                         fish.common_name,
                                       );
                                     }}
@@ -1040,15 +1072,17 @@ export default function FishSearch({
                       sx={{ display: "flex", flexDirection: "column", gap: 2 }}
                     >
                       {searchResultsList.map((result, index) => (
-                        <Fade in timeout={200 + index * 50} key={result.id}>
+                        <Fade
+                          in
+                          timeout={200 + index * 50}
+                          key={extractId(result.id)}
+                        >
                           <Box
                             onClick={() => {
-                              setQuery(result.id.toString());
+                              const actualId = extractId(result.id);
+                              setQuery(actualId.toString());
                               setIsLoading(true);
-                              fetchSpeciesDetails(
-                                result.id,
-                                result.common_name,
-                              );
+                              fetchSpeciesDetails(actualId, result.common_name);
                             }}
                             sx={{
                               p: 3,

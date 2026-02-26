@@ -417,16 +417,19 @@ export default function InfoPage({
               />
               <DataRow
                 label="Family"
-                value={`${fishData.family} (${fishData.family_code})`}
+                value={`${fishData.family} (${typeof fishData.family_code === "object" ? fishData.family_code.id : fishData.family_code})`}
               />
               <DataRow label="Subfamily" value={fishData.subfamily} />
               <DataRow
                 label="Genus"
-                value={`${fishData.genus} (${fishData.genus_code})`}
+                value={`${fishData.genus} (${typeof fishData.genus_code === "object" ? fishData.genus_code.id : fishData.genus_code})`}
               />
               <DataRow
                 label="Species Code"
-                value={fishData.species_code.toString()}
+                value={(typeof fishData.species_code === "object"
+                  ? fishData.species_code.id
+                  : fishData.species_code
+                ).toString()}
               />
             </InfoCard>
 
@@ -691,7 +694,7 @@ export default function InfoPage({
                     target.src = `https://placehold.co/320x280/1a568b/ffffff?text=${
                       fishData.common_name
                         ? fishData.common_name.replace(/ /g, "+")
-                        : `ID+${fishData.species_code}`
+                        : `ID+${typeof fishData.species_code === "object" ? fishData.species_code.id : fishData.species_code}`
                     }`;
                     target.onerror = null;
                   }}
@@ -761,7 +764,10 @@ export default function InfoPage({
 
           <SidebarCard title="Quick Facts">
             <div className="quick-facts-list">
-              <p>• Species ID: {fishData.id}</p>
+              <p>
+                • Species ID:{" "}
+                {typeof fishData.id === "object" ? fishData.id.id : fishData.id}
+              </p>
               <p>• Family: {fishData.family}</p>
               <p>• Max Size: {fishData.size_of_fish}</p>
               <p>• Max Weight: {fishData.max_weight}</p>
