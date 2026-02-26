@@ -421,6 +421,39 @@ export default function FishSearch({
     const numericId = parseInt(query);
     const isIdSearch = !isNaN(numericId) && numericId > 0;
 
+    // Helper to check if string contains Greek characters
+    const hasGreekChars = (str: string) =>
+      /[\u0370-\u03FF\u1F00-\u1FFF]/.test(str);
+
+    // Helper to convert common_name IDs to species codes
+    const convertCommonNameIdsToSpeciesCodes = async (
+      commonNameIds: number[],
+    ): Promise<number[]> => {
+      const speciesCodes: number[] = [];
+
+      for (const commonNameId of commonNameIds) {
+        try {
+          const response = await fetch(
+            buildApiUrl(`/common_name/${commonNameId}`),
+          );
+          if (response.ok) {
+            const data = await response.json();
+            // Extract species_code from the nested species object
+            if (data.species && data.species.species_code) {
+              speciesCodes.push(extractId(data.species.species_code));
+            }
+          }
+        } catch (e) {
+          console.error(
+            `Failed to get species code for common_name ID ${commonNameId}:`,
+            e,
+          );
+        }
+      }
+
+      return speciesCodes;
+    };
+
     try {
       let speciesCodeToFetch = 0;
       let resultsArray: number[] = [];
@@ -434,8 +467,23 @@ export default function FishSearch({
       let searchResponse = await fetch(searchUrl);
       searchData = searchResponse.ok ? await searchResponse.json() : null;
 
-      if (searchData && searchData.ids && searchData.ids.length > 0) {
-        resultsArray = searchData.ids;
+      // Handle different response formats
+      if (searchData) {
+        if (searchData.ids && searchData.ids.length > 0) {
+          // Format: {ids: [123, 456]} - already species codes
+          resultsArray = searchData.ids.map((id: any) => extractId(id));
+        } else if (searchData.results && searchData.results.length > 0) {
+          // Format: {results: [{id: ..., name: "..."}, ...]} - common_name IDs
+          // ONLY convert for Greek names - English names should fall through to scientific search
+          if (hasGreekChars(query)) {
+            const commonNameIds = searchData.results.map((item: any) =>
+              extractId(item.id),
+            );
+            resultsArray =
+              await convertCommonNameIdsToSpeciesCodes(commonNameIds);
+          }
+          // For non-Greek, leave resultsArray empty to continue to scientific search
+        }
       }
 
       if (resultsArray.length === 0) {
@@ -447,8 +495,23 @@ export default function FishSearch({
         searchResponse = await fetch(searchUrl);
         searchData = searchResponse.ok ? await searchResponse.json() : null;
 
-        if (searchData && searchData.ids && searchData.ids.length > 0) {
-          resultsArray = searchData.ids;
+        // Handle different response formats
+        if (searchData) {
+          if (searchData.ids && searchData.ids.length > 0) {
+            // Format: {ids: [123, 456]} - already species codes
+            resultsArray = searchData.ids.map((id: any) => extractId(id));
+          } else if (searchData.results && searchData.results.length > 0) {
+            // Format: {results: [{id: ..., name: "..."}, ...]} - common_name IDs
+            // ONLY convert for Greek names - English names should fall through to scientific search
+            if (hasGreekChars(capitalizedQuery)) {
+              const commonNameIds = searchData.results.map((item: any) =>
+                extractId(item.id),
+              );
+              resultsArray =
+                await convertCommonNameIdsToSpeciesCodes(commonNameIds);
+            }
+            // For non-Greek, leave resultsArray empty to continue to scientific search
+          }
         }
       }
 
